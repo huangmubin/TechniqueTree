@@ -211,7 +211,8 @@ void add() {
     * 255   (int)
     * 255U  (unsigned int)
     * 255L  (long int)
-
+    * 012   (八进制)
+    * 0x12  (十六进制)
 
 ## 字符串
 

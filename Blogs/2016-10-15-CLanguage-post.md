@@ -8,6 +8,7 @@ comments: true
 share: false
 ---
 
+
 # 程序框架
 
 ## 主框架
@@ -30,11 +31,6 @@ int main(int argc, char const *argv[]) {
 ```
 
 ## 作用域
-
-* 本地变量(局部变量): 变量所处的块中
-* 
-
-
 
 ```
 /* 注释块中的内容表示当前作用域所存在的参数 */
@@ -82,6 +78,10 @@ int main() {
 ```
 
 ---
+<!--  
+
+
+  -->
 
 # 输入输出
 
@@ -97,12 +97,13 @@ int main() {
 
 
 ---
+<!--  
+
+
+  -->
 
 # 符号
 
-* 特殊运算符
-    * *: 取地址的变量
-    * &: 取变量地址
 * 运算符
     * +
     * -
@@ -114,7 +115,7 @@ int main() {
     * ==
     * !=
     * >
-    * >=
+    * \>=
     * <
     * <=
 * 符合运算符
@@ -139,6 +140,9 @@ int main() {
     * 6: && 
     * 7: ||
     * 8: =  +=  -=  *=  /=  %=
+* 位运算
+    * *: 取地址的变量
+    * &: 取变量地址
 
 
 > 注意: ++, -- 符号在前缀表示先 +1/-1, 后缀表示运算完毕后 +1/-1
@@ -158,8 +162,36 @@ void add() {
 
 
 ---
+<!--  
+
+
+  -->
+
 
 # 数据类型
+
+* C 语言类型
+    * 整数
+        * char
+        * short
+        * int
+        * long
+        * long long (C99)
+    * 浮点数
+        * float
+        * double
+        * long double (C99)
+    * 逻辑
+        * bool (C99)
+    * 指针
+    * 自定义类型
+* C 语言所表达数字的范围
+    * char < short < int < float < double
+* 二进制表现
+    * 原码：数字的二进制表达
+    * 补码：补码和原码相加会等于一个溢出的零
+        * 补码的存在是为了简化负数运算。
+
 
 ## 变量
 
@@ -175,6 +207,11 @@ void add() {
 
 * 定义: const <type name> <value name>;
     * const int AMOUNT = 100;
+* 字面量
+    * 255   (int)
+    * 255U  (unsigned int)
+    * 255L  (long int)
+
 
 ## 字符串
 
@@ -194,7 +231,7 @@ printf("i = int(%d), char(%c); c = int(%d), char(%c);\n", i, i, c, c);
     * 字符串常量(字面量): "Hello"; 会被编译器变成一个字符数组，长度等于字符串+1。
         * 两个相邻的字符串会被连接起来变成一个大的字符串。
 
-```
+      ```
 /// 以下三种输出都是一样的: Test word
 printf("Test word");
 printf("Test "
@@ -213,7 +250,7 @@ word");
     * size_t strlen(const char *s); 返回字符串长度，不包含'\0';
     * int strcmp(const char *s1, const char *s2); 比较两个字符串，从第一个字母开始按 ASCII 码的差距输出。
         *  0: s1 == s2
-        * >0: s1 >  s2
+        * \>0: s1 >  s2
         * <0: s1 <  s2
         * 安全版本: int strncmp(const char *s1, const char *s2, size_t n); 只比较开头几个字母
     * char *strcpy(char *restrict dst, const char *restrict src); 把 src 的字符串拷贝到 dst 中
@@ -255,8 +292,10 @@ word");
 ## 指针
 
 * 定义
+* 地址以 16 进制输出: printf("&i = %p\n", &i); // &i = 0x7fff5fbff7ec
 
-```
+
+ ```
 int main(int argc, const char * argv[]) {
     /* 定义 int 类型的变量 i, j 和 int 类型的指针 jp */
     int i, j;
@@ -311,13 +350,16 @@ Program ended with exit code: 0
  */
 ```
 
-* 地址以 16 进制输出: printf("&i = %p\n", &i); // &i = 0x7fff5fbff7ec
 
 
 
 ---
+<!--  
 
-# 逻辑
+
+  -->
+
+# 逻辑运算
 
 * break: 在判断或循环中使用，退出当层运算。
 * continue: 在循环中使用，跳过当前循环中后面的步骤，从下一次循环开始。
@@ -419,6 +461,10 @@ out:
 
 
 ---
+<!--  
+
+
+  -->
 
 
 # 函数
@@ -472,20 +518,28 @@ int functionName(int value1, int value2) {
 
 
 ---
+<!--  
+
+
+  -->
 
 ---
+<!--  
+
+
+  -->
 
 # 附录
 
 ## C 语言保留字
 
 * 数据类型
+    * unsigned
     * int
     * float
     * double
     * long
     * short
-    * unsigned
     * char
     * void
     * sizeof
@@ -523,6 +577,10 @@ int functionName(int value1, int value2) {
 * restrict
 
 ---
+<!--  
+
+
+  -->
 
 
 ## 数据符号
@@ -544,3 +602,7 @@ int functionName(int value1, int value2) {
 
 
 ---
+<!--  
+
+
+  -->

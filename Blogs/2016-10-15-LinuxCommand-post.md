@@ -8,6 +8,7 @@ comments: true
 share: false
 ---
 
+
 # 常用命令
 
 * 路径移动:                cd <path>
@@ -21,8 +22,9 @@ share: false
 
 # 编译程序
 
-* 编译文件:          gcc <file> 
-    * 编译成指定文件: gcc <file> -ouput <new file name>
+* 编译文件:                 gcc <file> 
+    * 编译成指定文件:        gcc <file> -output <new file name>
+    * 使用特定的进制来编译:   gcc <file> -output <new file name> -m32
 
 # 文件命令
 

@@ -87,10 +87,12 @@ int main() {
 
 * 输出: extern int printf(const char *format, ...);
     * printf("Hello World!\n");
-    * prittf("10 + 20 = %d", 10 + 20);
+    * printf("10 + 20 = %d", 10 + 20);
+    * printf("10.0 / 3.0 = %.2f", 10.0/3.0); // 只读取小数点后 2 位。
 * 输入: int scanf(const char * restrict format,...);
     * scanf("%d", &value);
-
+    * scanf("%s", &word);       // 读取字符串，可能会数组越界
+    * scanf("%7s", &word);      // 读取字符串，但是长度只能为 7 个字符。
 
 
 
@@ -206,6 +208,27 @@ word");
         * char *word    = "Hello";
         * char word[]   = "Hello";
         * char word[10] = "Hello";
+
+* 字符串函数
+    * size_t strlen(const char *s); 返回字符串长度，不包含'\0';
+    * int strcmp(const char *s1, const char *s2); 比较两个字符串，从第一个字母开始按 ASCII 码的差距输出。
+        *  0: s1 == s2
+        * >0: s1 >  s2
+        * <0: s1 <  s2
+        * 安全版本: int strncmp(const char *s1, const char *s2, size_t n); 只比较开头几个字母
+    * char *strcpy(char *restrict dst, const char *restrict src); 把 src 的字符串拷贝到 dst 中
+        * 返回 dst;
+        * restrict 表示 src 和 dst 不重叠(C99)
+        * 安全版本: char *strncpy(char *restrict dst, const char *restrict src, size_t n);
+    * char *strcat(char *restrict s1, const char *restrict s2); 把 s2 拷贝到 s1 的后面，接成一个长字符串
+        * 返回 s1
+        * s1 必须要有足够的空间
+        * 实际上还是一种拷贝
+        * 安全版本: char *strncat(char *restrict s1, const char *restrict s2, size_t n);
+    * char *strchr(const char *s, int c);  输出从左边开始 c 出现的位置的指针
+        * 没有找到就返回 NULL
+    * char *strrchr(const char *s, int c); 输出从右边开始 c 出现的位置的指针
+        * 没有找到就返回 NULL
 
 ## 数组
 

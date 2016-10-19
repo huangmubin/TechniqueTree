@@ -8,6 +8,8 @@
 
 #include "CCodeLibrary.h"
 
+// MARK: - 测试小程序
+
 /** 输出 int 类型最大值与最大值的位数 */
 void printfIntTypeMax() {
     int a = 0, b = 0;

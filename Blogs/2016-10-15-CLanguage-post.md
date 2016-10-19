@@ -514,9 +514,17 @@ int functionName(int value1, int value2) {
     * 计算类型长度符号的关键字。可以计算类型，变量。
     * 这个是一个编译关键字，不是函数，计算大小是在编译的时候进行计算而不是程序运行时。
 * double sqrt(double x);
-    * #include <math.h>
+    * \#include <math.h>
     * The sqrt() function compute the non-negative square root of x.
 
+# 类型别名 typedef
+
+```
+typedef struct ChainListNode {
+    ElementType Data;
+    struct ChainListNode * Next;
+} ChainList;
+```
 
 ---
 <!--  
@@ -607,3 +615,4 @@ int functionName(int value1, int value2) {
 
 
   -->
+

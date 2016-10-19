@@ -1,45 +1,12 @@
----
-layout: post
-title: "Data Struct And Algorithm"
-description: "常用数据结构学习笔记"
-date: 2016-10-16
-tags: [DataStruct, Algorithm]
-comments: true
-share: false
----
+//
+//  DataStructure.c
+//  CLanguage2
+//
+//  Created by 黄穆斌 on 16/10/19.
+//  Copyright © 2016年 MuBinHuang. All rights reserved.
+//
 
-[TOC]
-
-# 数据结构 Data Structure
-
-数据结构是计算机中存储，组织数据的方式。
-
-## 线性结构
-
-## 线性表 Linear List
-
-* 定义: 由同类型数据元素构成的有序序列线性结构。
-    * 长度: 表中元素的个数
-    * 空表: 没有元素的时候
-    * 表头: 起始位置
-    * 表尾: 结束位置
-* 常用操作
-    * 初始化一个空表: List MakeEmpty()
-    * 计算长度: int Length(List L)
-    * 返回某个元素: ElementType FindK(int K, List L)
-    * 查找元素位置: int Find(ElementType X, list L)
-    * 插入元素: void Insert(ElementType X, int i, List L)
-    * 删除某个元素: void Delete(int i, List L)
-* 表现方式
-    * 数组
-    * 链表
-
-
-> C 语言实现链表
-
-``` C
-#include <stdio.h>
-#include <stdlib.h>
+#include "DataStructure.h"
 
 #define Type int
 
@@ -144,18 +111,3 @@ ChainList *chainListDelete(int index, ChainList *list) {
     free(d);
     return list;
 }
-```
-
----
-
----
-
-# 常用算法 Algorithm
-
-有限的指令集，接受 0 个或多个输入，产生输出，并在一定步骤之后终止。
-
-* 算法评判标准
-    * 空间复杂度 S(n)
-    * 时间复杂度 T(n)
-
-

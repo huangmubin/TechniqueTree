@@ -146,6 +146,139 @@ ChainList *chainListDelete(int index, ChainList *list) {
 }
 ```
 
+> Swift 实现链表 (事实上 Swift 可以使用数组很简易的实现链表功能，不需要封装，但是我这里还是写了，而且把它写成泛型协议，这样只要遵守这个协议的类就可以拥有链表的操作了。当然，这一点都不实用，其实是一种炫技。)
+
+```Swift
+// MARK: - 线性表
+
+protocol ChainList: class {
+    associatedtype Element: Equatable
+    var data: Element { get set }
+    var next: Self? { get set }
+    init()
+}
+
+extension ChainList {
+    
+    /// 返回当前节点到链表结尾的长度
+    var length: Int {
+        var i = 1
+        var p: Self? = self
+        while p?.next != nil {
+            p = p?.next
+            i += 1
+        }
+        return i
+    }
+    
+    /// 查找元素
+    subscript(index: Int) -> Self? {
+        var i = 0
+        var p: Self? = self
+        while p != nil && i < index {
+            p = p?.next
+            i += 1
+        }
+        return p
+    }
+    
+    /// 通过值来查找元素
+    func find(value: Element) -> Self? {
+        var p: Self? = self
+        while p != nil && value != p?.data {
+            p = p?.next
+        }
+        return p
+    }
+    
+    /// 插入元素
+    @discardableResult func insert(value: Element, to: Int) -> Self? {
+        if to == 0 {
+            let node  = Self.init()
+            node.data = value
+            node.next = self
+            return node
+        }
+        
+        if let pre = self[to - 1] {
+            let node  = Self.init()
+            node.data = value
+            node.next = pre.next
+            pre.next  = node
+            return self
+        }
+        
+        return nil
+    }
+    
+    /// 删除元素
+    @discardableResult func delete(index: Int) -> Self? {
+        if index == 0 {
+            return self.next
+        }
+        
+        if let pre = self[index - 1] {
+            pre.next = pre.next?.next
+            return self
+        }
+        
+        return nil
+    }
+    
+}
+
+// MARK: - 使用示例
+
+final class List: ChainList {
+    typealias Element = String
+    var data: List.Element = ""
+    var next: List?
+    required init() { }
+}
+
+var top: List? = List()
+top?.data = "0"
+
+for i in 1 ..< 5 {
+    let _ = top?.insert(value: "\(i)", to: i)
+}
+
+if let length = top?.length {
+    for i in 0 ..< length {
+        print(top?[i]?.data)
+    }
+    
+    for _ in 0 ..< length-1 {
+        let _ = top?.delete(index: 1)
+    }
+}
+
+print("Tag")
+
+if let length = top?.length {
+    for i in 0 ..< length {
+        print(top?[i]?.data)
+    }
+}
+
+print("Done")
+
+/* 打印输出
+
+Optional("0")
+Optional("1")
+Optional("2")
+Optional("3")
+Optional("4")
+Tag
+Optional("0")
+Done
+Program ended with exit code: 0
+
+ */
+```
+
+
 ---
 
 ---

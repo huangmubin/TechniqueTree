@@ -123,7 +123,6 @@ extension StackProtocol {
 
 // MARK: - 树 Tree
 
-
 class BinaryTree<T> {
     var data: T
     var left: BinaryTree<T>?
@@ -354,5 +353,182 @@ class BinaryTree<T> {
     }
 }
 
+// MARK: - Tree
+
+enum TraverseOrder {
+    case pre
+    case `in`
+    case post
+    case level
+}
+
+protocol TreeValueProtocol: Comparable {
+    
+}
+
+class Tree<T: TreeValueProtocol> {
+    
+    // MARK: Data
+    
+    var data: T
+    var right: Tree?
+    var left: Tree?
+    
+    init(data: T) {
+        
+        self.data = data
+    }
+    
+    // MARK: 遍历 
+    
+    /// 遍历该树的以及其子树。
+    func traverse(use: TraverseOrder, handle: (Tree) -> Bool) {
+        switch use {
+        case .pre:
+            traversePreOrder(action: handle)
+        case .in:
+            traverseInOrder(action: handle)
+        case .post:
+            traversePostOrder(action: handle)
+        case .level:
+            traverseLevelOrder(action: handle)
+        }
+    }
+    
+    private func traversePreOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                if !action(tree!) {
+                    return
+                }
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                tree = tree?.right;
+            }
+        }
+    }
+    private func traverseInOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                if !action(tree!) {
+                    return
+                }
+                tree = tree?.right;
+            }
+        }
+    }
+    private func traversePostOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        var output = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        if !action(tree!) {
+                            return
+                        }
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    if !action(tree!) {
+                        return
+                    }
+                } else {
+                    return
+                }
+            }
+        }
+    }
+    private func traverseLevelOrder(action: (Tree) -> Bool) {
+        var queue = [self]
+        var tree: Tree
+        while !queue.isEmpty {
+            tree = queue.removeFirst()
+            if !action(tree) {
+                return
+            }
+            if let left = tree.left {
+                queue.append(left)
+            }
+            if let right = tree.right {
+                queue.append(right)
+            }
+        }
+    }
+    
+    // MARK: 搜索树
+    
+    func find(value: T) -> Tree? {
+        var tree: Tree? = self
+        while tree != nil {
+            if tree!.data == value {
+                return tree
+            } else if tree!.data > value {
+                tree = tree?.left
+            } else {
+                tree = tree?.right
+            }
+        }
+        return nil
+    }
+    
+    func find(where compare: (Tree) -> Bool?) -> Tree? {
+        var tree: Tree? = self
+        while tree != nil {
+            if let result = compare(tree!) {
+                tree = result ? tree?.left : tree?.right
+            } else {
+                return tree
+            }
+        }
+        return nil
+    }
+    
+    var min: Tree {
+        var tree = self
+        while tree.left != nil {
+            tree = tree.left!
+        }
+        return tree
+    }
+    
+    var max: Tree {
+        var tree = self
+        while tree.right != nil {
+            tree = tree.right!
+        }
+        return tree
+    }
+    
+    func insert(value: T) {
+        
+    }
+}
 
 

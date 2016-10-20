@@ -123,6 +123,7 @@ extension StackProtocol {
 
 // MARK: - 树 Tree
 
+
 class BinaryTree<T> {
     var data: T
     var left: BinaryTree<T>?
@@ -130,6 +131,93 @@ class BinaryTree<T> {
     
     init(data: T) {
         self.data = data
+    }
+    
+    func traverseForPre(action: (BinaryTree) -> Bool) {
+        var tree: BinaryTree? = self
+        var stack = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                if !action(tree!) {
+                    return
+                }
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                tree = tree?.right;
+            }
+        }
+    }
+    func traverseForIn(action: (BinaryTree) -> Bool) {
+        var tree: BinaryTree? = self
+        var stack = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                if !action(tree!) {
+                    return
+                }
+                tree = tree?.right;
+            }
+        }
+    }
+    func traverseForPost(action: (BinaryTree) -> Bool) {
+        var tree: BinaryTree? = self
+        var stack = [BinaryTree]()
+        var output = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        if !action(tree!) {
+                            return
+                        }
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    if !action(tree!) {
+                        return
+                    }
+                } else {
+                    return
+                }
+            }
+        }
+    }
+    func traverseForLevel(action: (BinaryTree) -> Bool) {
+        var queue = [self]
+        var tree: BinaryTree
+        while !queue.isEmpty {
+            tree = queue.removeFirst()
+            if !action(tree) {
+                return
+            }
+            if let left = tree.left {
+                queue.append(left)
+            }
+            if let right = tree.right {
+                queue.append(right)
+            }
+        }
     }
     
     // MARK: 递归遍历
@@ -151,12 +239,39 @@ class BinaryTree<T> {
     }
     
     class func postRecursive(tree: BinaryTree?) {
-        if (tree != nil) {
-            postRecursive(tree: tree?.left)
-            postRecursive(tree: tree?.right)
-            print("\(tree?.data)")
+        var tree: BinaryTree? = tree
+        var stack = [BinaryTree]()
+        var output = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        print(tree?.data)
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    print(tree?.data)
+                } else {
+                    return
+                }
+            }
         }
     }
+    
+    // MARK: 循环遍历
     
     class func inLoop(tree: BinaryTree) {
         var tree: BinaryTree? = tree
@@ -220,7 +335,21 @@ class BinaryTree<T> {
                     return
                 }
             }
-            
+        }
+    }
+    
+    class func levelLoop(tree: BinaryTree) {
+        var queue = [tree]
+        var tree: BinaryTree
+        while !queue.isEmpty {
+            tree = queue.removeFirst()
+            print(tree.data)
+            if let left = tree.left {
+                queue.append(left)
+            }
+            if let right = tree.right {
+                queue.append(right)
+            }
         }
     }
 }

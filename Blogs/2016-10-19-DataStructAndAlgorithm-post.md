@@ -415,6 +415,39 @@ Type chainStackPop(ChainStack *stack) {
 
 > Swift 语言版数组堆栈
 
+```
+// MARK: - 堆栈 Stack
+
+protocol Stack: class {
+    associatedtype Element
+    var stack: [Element] { get set }
+}
+
+extension Stack {
+    
+    var isEmpty: Bool {
+        return stack.isEmpty
+    }
+    
+    var count: Int {
+        return stack.count
+    }
+    
+    func push(item: Element) {
+        stack.append(item)
+    }
+    
+    func pop() -> Element? {
+        if stack.isEmpty {
+            return nil
+        } else {
+            return stack.removeLast()
+        }
+    }
+    
+}
+```
+
 ---
 
 ---

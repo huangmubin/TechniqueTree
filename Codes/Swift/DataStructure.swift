@@ -85,3 +85,39 @@ extension ChainList {
     }
     
 }
+
+// MARK: - 堆栈 Stack
+
+protocol StackProtocol: class {
+    associatedtype Element
+    var datas: [Element] { get set }
+}
+
+extension StackProtocol {
+    
+    var isEmpty: Bool {
+        return datas.isEmpty
+    }
+    
+    var count: Int {
+        return datas.count
+    }
+    
+    func push(item: Element) {
+        datas.append(item)
+    }
+    
+    func pop() -> Element? {
+        if datas.isEmpty {
+            return nil
+        } else {
+            return datas.removeLast()
+        }
+    }
+    
+    func top() -> Element? {
+        return datas.last
+    }
+    
+}
+

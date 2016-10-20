@@ -111,3 +111,55 @@ ChainList *chainListDelete(int index, ChainList *list) {
     free(d);
     return list;
 }
+
+
+// MARK: - Stack
+
+#define MaxSize 10
+#define TypeError -1
+
+typedef struct {
+    Type *data;
+    int max;
+    int top;
+} ArrayStack;
+
+/// 创建堆栈
+ArrayStack *arrayStackInit(int size) {
+    ArrayStack *s = (ArrayStack *)malloc(sizeof(ArrayStack));
+    Type array[size];
+    s->data = array;
+    s->top  = -1;
+    s->max  = size-1;
+    return s;
+}
+
+/// 检查堆栈是否已满
+int arrayStackIsFull(ArrayStack stack) {
+    return stack.top - stack.max;
+}
+
+/// 检查堆栈是否为空
+int arrayStackIsEmpty(ArrayStack stack) {
+    return stack.top + 1;
+}
+
+/// 入栈
+int arrayStackPush(Type item, ArrayStack stack) {
+    if (stack.top == stack.max) {
+        return 0;
+    } else {
+        stack.data[++stack.top] = item;
+        return 1;
+    }
+}
+
+/// 出栈
+Type arrayStackPop(ArrayStack stack) {
+    if (stack.top == -1) {
+        return TypeError;
+    } else {
+        return stack.data[stack.top--];
+    }
+}
+

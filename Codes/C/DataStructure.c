@@ -219,23 +219,144 @@ Type chainStackPop(ChainStack *stack) {
  
  */
 
+// MARK: - 队列 Queue
+
+// MARK: 数组队列
+
+typedef struct {
+    Type *data;
+    int top;
+    int tail;
+    int size;
+} ArrayQueue;
 
 
+/// 创建队列
+ArrayQueue *arrayQueueInit(int size) {
+    ArrayQueue *q = (ArrayQueue *)malloc(sizeof(ArrayQueue));
+    Type d[size];
+    q->data = d;
+    q->top  = 0;
+    q->tail = 0;
+    q->size = size;
+    return q;
+}
+
+int arrayQueueIsFull(ArrayQueue *queue) {
+    int n = queue->top + 1;
+    n %= queue->size;
+    if (n == queue->tail) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int arrayQueueIsEmpty(ArrayQueue *queue) {
+    if (queue->top == queue->tail) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int arrayQueueAppend(Type item, ArrayQueue *queue) {
+    if (arrayQueueIsFull(queue)) {
+        return 0;
+    }
+    
+    queue->data[queue->top++] = item;
+    queue->top %= queue->size;
+    return 1;
+}
+
+Type arrayQueueDelete(ArrayQueue *queue) {
+    if (arrayQueueIsEmpty(queue)) {
+        return 0;
+    }
+    
+    Type t = queue->data[queue->tail++];
+    queue->tail %= queue->size;
+    return t;
+}
+
+// MARK: 链表队列
+
+typedef struct {
+    struct ChainListNode *top;
+    struct ChainListNode *tail;
+} ChainQueue;
+
+ChainQueue *chainQueueInit() {
+    ChainQueue *q = (ChainQueue *)malloc(sizeof(ChainQueue));
+    q->top = NULL;
+    q->tail = NULL;
+    return q;
+}
+
+int chainQueueIsEmpty(ChainQueue *queue) {
+    return (queue->tail == NULL);
+}
+
+void chainQueueAppend(Type item, ChainQueue *queue) {
+    ChainList *c = (ChainList *)malloc(sizeof(ChainList));
+    c->data = item;
+    c->next = NULL;
+    queue->top = c;
+    if (queue->tail == NULL) {
+        queue->tail = c;
+    }
+}
+
+Type chainQueueDelete(ChainQueue *queue) {
+    if (chainQueueIsEmpty(queue)) {
+        return TypeError;
+    }
+    
+    Type c = queue->tail->data;
+    queue->tail = queue->tail->next;
+    if (queue->tail == NULL) {
+        queue->top = NULL;
+    }
+    return c;
+}
 
 
+// MARK: - 树 Tree
+
+typedef struct BinaryTreeNode {
+    Type data;
+    struct BinaryTreeNode *left;
+    struct BinaryTreeNode *right;
+} BinaryTree;
+
+//recursive
 
 
+// MARK: 树递归遍历
 
+void btreePreOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        printf("%d", tree->data);
+        btreePreOrderRecursive(tree->left);
+        btreePreOrderRecursive(tree->right);
+    }
+}
 
+void btreeInOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        btreePreOrderRecursive(tree->left);
+        printf("%d", tree->data);
+        btreePreOrderRecursive(tree->right);
+    }
+}
 
+void btreePostOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        btreePreOrderRecursive(tree->left);
+        btreePreOrderRecursive(tree->right);
+        printf("%d", tree->data);
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
+// MARK: 树循环遍历

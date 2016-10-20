@@ -121,3 +121,109 @@ extension StackProtocol {
     
 }
 
+// MARK: - 树 Tree
+
+class BinaryTree<T> {
+    var data: T
+    var left: BinaryTree<T>?
+    var right: BinaryTree<T>?
+    
+    init(data: T) {
+        self.data = data
+    }
+    
+    // MARK: 递归遍历
+    
+    class func preRecursive(tree: BinaryTree?) {
+        if (tree != nil) {
+            print("\(tree?.data)")
+            preRecursive(tree: tree?.left)
+            preRecursive(tree: tree?.right)
+        }
+    }
+    
+    class func inRecursive(tree: BinaryTree?) {
+        if (tree != nil) {
+            inRecursive(tree: tree?.left)
+            print("\(tree?.data)")
+            inRecursive(tree: tree?.right)
+        }
+    }
+    
+    class func postRecursive(tree: BinaryTree?) {
+        if (tree != nil) {
+            postRecursive(tree: tree?.left)
+            postRecursive(tree: tree?.right)
+            print("\(tree?.data)")
+        }
+    }
+    
+    class func inLoop(tree: BinaryTree) {
+        var tree: BinaryTree? = tree
+        var stack = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                print(tree?.data)
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    class func preLoop(tree: BinaryTree) {
+        var tree: BinaryTree? = tree
+        var stack = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                print(tree?.data)
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    class func postLoop(tree: BinaryTree) {
+        var tree: BinaryTree? = tree
+        var stack = [BinaryTree]()
+        var output = [BinaryTree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        print(tree?.data)
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    print(tree?.data)
+                } else {
+                    return
+                }
+            }
+            
+        }
+    }
+}
+
+
+

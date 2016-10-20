@@ -448,6 +448,152 @@ extension Stack {
 }
 ```
 
+### 队列
+
+* 定义只能在一端插入，另一端删除。
+    * 入队列
+    * 出队列
+    * 先进先出 FIFO
+* 实现
+    * 数组实现
+    * 链表实现
+
+#### C
+
+##### 数组实现循环队列
+
+```
+// MARK: 数组队列
+
+typedef struct {
+    Type *data;
+    int top;
+    int tail;
+    int size;
+} ArrayQueue;
+
+
+/// 创建队列
+ArrayQueue *arrayQueueInit(int size) {
+    ArrayQueue *q = (ArrayQueue *)malloc(sizeof(ArrayQueue));
+    Type d[size];
+    q->data = d;
+    q->top  = 0;
+    q->tail = 0;
+    q->size = size;
+    return q;
+}
+
+int arrayQueueIsFull(ArrayQueue *queue) {
+    int n = queue->top + 1;
+    n %= queue->size;
+    if (n == queue->tail) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int arrayQueueIsEmpty(ArrayQueue *queue) {
+    if (queue->top == queue->tail) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int arrayQueueAppend(Type item, ArrayQueue *queue) {
+    if (arrayQueueIsFull(queue)) {
+        return 0;
+    }
+    
+    queue->data[queue->top++] = item;
+    queue->top %= queue->size;
+    return 1;
+}
+
+Type arrayQueueDelete(ArrayQueue *queue) {
+    if (arrayQueueIsEmpty(queue)) {
+        return 0;
+    }
+    
+    Type t = queue->data[queue->tail++];
+    queue->tail %= queue->size;
+    return t;
+}
+```
+
+##### 数组实现链表队列
+
+```
+// MARK: 链表队列
+
+typedef struct {
+    struct ChainListNode *top;
+    struct ChainListNode *tail;
+} ChainQueue;
+
+ChainQueue *chainQueueInit() {
+    ChainQueue *q = (ChainQueue *)malloc(sizeof(ChainQueue));
+    q->top = NULL;
+    q->tail = NULL;
+    return q;
+}
+
+int chainQueueIsEmpty(ChainQueue *queue) {
+    return (queue->tail == NULL);
+}
+
+void chainQueueAppend(Type item, ChainQueue *queue) {
+    ChainList *c = (ChainList *)malloc(sizeof(ChainList));
+    c->data = item;
+    c->next = NULL;
+    queue->top = c;
+    if (queue->tail == NULL) {
+        queue->tail = c;
+    }
+}
+
+Type chainQueueDelete(ChainQueue *queue) {
+    if (chainQueueIsEmpty(queue)) {
+        return TypeError;
+    }
+    
+    Type c = queue->tail->data;
+    queue->tail = queue->tail->next;
+    if (queue->tail == NULL) {
+        queue->top = NULL;
+    }
+    return c;
+}
+```
+
+## 树
+
+* 术语
+    * 结点的度 (Degree): 结点的子树个数
+    * 树的度: 树的所有结点中最大的度
+    * 叶节点 (Leaf): 度为 0 的结点
+    * 父节点 (Parent): 有子树的结点就是其子树的根结点的父节点
+    * 子节点 (Child): 子树的根节点就是子节点
+    * 兄弟结点 (Sibling): 同一父节点的结点就是彼此的兄弟结点
+    * 路径和路径长度: 两个结点之间的结点集合就是路径，结点数量就是路径长度
+    * 祖先结点 (Ancestor)
+    * 子孙结点 (Descendant)
+    * 结点的层次 (Level): 根结点在 1 层，其他结点累计添加
+    * 深度 (Depth): 所有节点中最大的层次叫做树的深度
+* 树的种类
+    * 二叉树
+        * 性质
+            * 第 i 层的最大节点数为 2 的 i-1 次方
+            * 深度为 k 的二叉树最大的结点总数为 2 的 k 次方减 1
+            * 任何非空的二叉树，如果 n0 表示叶节点个数，n2 为非叶节点个数，那么 n0 = n2 + 1
+        * 特殊种类
+            * 斜二叉树
+            * 完美二叉树
+            * 完全二叉树
+
+
 ---
 
 ---

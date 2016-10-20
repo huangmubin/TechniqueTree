@@ -156,6 +156,11 @@ ChainList *chainListDelete(int index, ChainList *list) {
 ```Swift
 // MARK: - 线性表
 
+/* 
+在这个泛型协议中，我定义了一个准守 Equatable 协议的泛型 Element, 这是为了后面按值查找的时候可以直接使用等号进行判断。
+但实际上这并不是一种聪明的做法，在进行判断的时候完全可以使用闭包来进行处理，这样就能获取更多的类型支持。这里只是为了能表现泛型类型约束的用法，才就这样做。
+协议后面的 class 表示这个协议只能被 class 遵从，这种约束是必要的，如果你想使用 struct 类型来实现链表，不是说不可以，但这明显不是一个适用值拷贝场景的地方。
+*/
 protocol ChainList: class {
     associatedtype Element: Equatable
     var data: Element { get set }
@@ -234,6 +239,9 @@ extension ChainList {
 
 // MARK: - 使用示例
 
+/*
+遗憾的是，由于协议当中使用了 Self 类型，所以遵从这个协议的类不得不设置为 final。也就是无法继承了。
+*/
 final class List: ChainList {
     typealias Element = String
     var data: List.Element = ""
@@ -305,7 +313,103 @@ Program ended with exit code: 0
 
 > C 语言版数组堆栈: 数组版本的堆栈还可以实现同个数组的双堆栈，让其中一个堆栈的起点放在数组的尾部即可，实现也很简单，这里不做实现。
 
-> C 语言版链表堆栈
+##### C 语言版数组堆栈
+
+```
+// MARK: Array
+
+#define MaxSize 10
+#define TypeError -1
+
+typedef struct {
+    Type *data;
+    int max;
+    int top;
+} ArrayStack;
+
+/// 创建堆栈
+ArrayStack *arrayStackInit(int size) {
+    ArrayStack *s = (ArrayStack *)malloc(sizeof(ArrayStack));
+    Type array[size];
+    s->data = array;
+    s->top  = -1;
+    s->max  = size-1;
+    return s;
+}
+
+/// 检查堆栈是否已满
+int arrayStackIsFull(ArrayStack stack) {
+    return stack.top - stack.max;
+}
+
+/// 检查堆栈是否为空
+int arrayStackIsEmpty(ArrayStack stack) {
+    return stack.top + 1;
+}
+
+/// 入栈
+int arrayStackPush(Type item, ArrayStack stack) {
+    if (stack.top == stack.max) {
+        return 0;
+    } else {
+        stack.data[++stack.top] = item;
+        return 1;
+    }
+}
+
+/// 出栈
+Type arrayStackPop(ArrayStack stack) {
+    if (stack.top == -1) {
+        return TypeError;
+    } else {
+        return stack.data[stack.top--];
+    }
+}
+```
+
+##### C 语言版链表堆栈
+
+```
+// MARK: Chain
+
+typedef struct ChainStackNode {
+    Type data;
+    struct ChainStackNode *prev;
+} ChainStack;
+
+ChainStack *chainStackInit() {
+    ChainStack *s = (ChainStack *)malloc(sizeof(ChainStack));
+    s->data = -1;
+    s->prev = NULL;
+    return s;
+}
+
+int chainStackIsEmpty(ChainStack *stack) {
+    return (stack->prev == NULL);
+}
+
+void chainStackPush(Type value, ChainStack *stack) {
+    ChainStack *s = (ChainStack *)malloc(sizeof(ChainStack));
+    s->data = value;
+    s->prev = stack->prev;
+    stack->prev = s;
+}
+
+Type chainStackPop(ChainStack *stack) {
+    if (stack->prev == NULL) {
+        return TypeError;
+    } else {
+        ChainStack *s;
+        s = stack;
+        stack = stack->prev;
+        Type i = s->data;
+        free(s);
+        return i;
+    }
+}
+```
+
+
 
 #### Swift
 

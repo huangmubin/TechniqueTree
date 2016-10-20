@@ -115,6 +115,8 @@ ChainList *chainListDelete(int index, ChainList *list) {
 
 // MARK: - Stack
 
+// MARK: Array
+
 #define MaxSize 10
 #define TypeError -1
 
@@ -162,4 +164,78 @@ Type arrayStackPop(ArrayStack stack) {
         return stack.data[stack.top--];
     }
 }
+
+// MARK: Chain
+
+typedef struct ChainStackNode {
+    Type data;
+    struct ChainStackNode *prev;
+} ChainStack;
+
+ChainStack *chainStackInit() {
+    ChainStack *s = (ChainStack *)malloc(sizeof(ChainStack));
+    s->data = -1;
+    s->prev = NULL;
+    return s;
+}
+
+int chainStackIsEmpty(ChainStack *stack) {
+    return (stack->prev == NULL);
+}
+
+void chainStackPush(Type value, ChainStack *stack) {
+    ChainStack *s = (ChainStack *)malloc(sizeof(ChainStack));
+    s->data = value;
+    s->prev = stack->prev;
+    stack->prev = s;
+}
+
+Type chainStackPop(ChainStack *stack) {
+    if (stack->prev == NULL) {
+        return TypeError;
+    } else {
+        ChainStack *s;
+        s = stack;
+        stack = stack->prev;
+        Type i = s->data;
+        free(s);
+        return i;
+    }
+}
+
+
+// MARK: 堆栈的表达式求值算法
+
+/*
+ 2*(9+6/3-5)+4=
+ 
+ (9+6/3-5)+4=
+ 堆1:
+ 堆2: 2963/+5-*4+
+ 
+ 2963/+5-*4+
+ 
+ 16
+ 
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

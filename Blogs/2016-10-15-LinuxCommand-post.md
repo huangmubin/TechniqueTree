@@ -19,6 +19,8 @@ share: false
 * 执行程序:                 ./<a.out>
 * 打印内容:                 echo <some thing>
 * 查看帮助文档:              man <...>
+* 关机 shutdown
+    * 现在关机 shutdown -h now
 
 # 编译程序
 
@@ -32,3 +34,4 @@ share: false
 * 删除文件和目录:      rm <file>
 	* -f 向下递归
 	* -r 强行删除
+

@@ -603,7 +603,198 @@ Type chainQueueDelete(ChainQueue *queue) {
          * 查找: 二分查找
          * 插入: 
          * 删除: 
+     * 平衡树
 
+    
+
+### 二叉树
+
+#### C
+
+只实现递归遍历
+
+```
+
+// MARK: - 树 Tree
+
+typedef struct BinaryTreeNode {
+    Type data;
+    struct BinaryTreeNode *left;
+    struct BinaryTreeNode *right;
+} BinaryTree;
+
+//recursive
+
+
+// MARK: 树递归遍历
+
+void btreePreOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        printf("%d", tree->data);
+        btreePreOrderRecursive(tree->left);
+        btreePreOrderRecursive(tree->right);
+    }
+}
+
+void btreeInOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        btreePreOrderRecursive(tree->left);
+        printf("%d", tree->data);
+        btreePreOrderRecursive(tree->right);
+    }
+}
+
+void btreePostOrderRecursive(BinaryTree *tree) {
+    if (tree) {
+        btreePreOrderRecursive(tree->left);
+        btreePreOrderRecursive(tree->right);
+        printf("%d", tree->data);
+    }
+}
+```
+
+#### Swift
+
+实现循环遍历
+
+```
+// MARK: - Tree
+
+enum TraverseOrder {
+    case pre
+    case `in`
+    case post
+    case level
+}
+
+protocol TreeValueProtocol: Comparable {
+    
+}
+
+class Tree<T: TreeValueProtocol> {
+    
+    // MARK: Data
+    
+    var data: T
+    var right: Tree?
+    var left: Tree?
+    
+    init(data: T) {
+        
+        self.data = data
+    }
+    
+    // MARK: 遍历 
+    
+    /// 遍历该树的以及其子树。
+    func traverse(use: TraverseOrder, handle: (Tree) -> Bool) {
+        switch use {
+        case .pre:
+            traversePreOrder(action: handle)
+        case .in:
+            traverseInOrder(action: handle)
+        case .post:
+            traversePostOrder(action: handle)
+        case .level:
+            traverseLevelOrder(action: handle)
+        }
+    }
+    
+    /// 前序遍历
+    private func traversePreOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                if !action(tree!) {
+                    return
+                }
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    /// 中序遍历
+    private func traverseInOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                if !action(tree!) {
+                    return
+                }
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    /// 后序遍历
+    private func traversePostOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        var output = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        if !action(tree!) {
+                            return
+                        }
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    if !action(tree!) {
+                        return
+                    }
+                } else {
+                    return
+                }
+            }
+        }
+    }
+    
+    /// 层次遍历
+    private func traverseLevelOrder(action: (Tree) -> Bool) {
+        var queue = [self]
+        var tree: Tree
+        while !queue.isEmpty {
+            tree = queue.removeFirst()
+            if !action(tree) {
+                return
+            }
+            if let left = tree.left {
+                queue.append(left)
+            }
+            if let right = tree.right {
+                queue.append(right)
+            }
+        }
+    }
+}
+```
 
 ---
 

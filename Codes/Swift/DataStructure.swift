@@ -395,6 +395,7 @@ class Tree<T: TreeValueProtocol> {
         }
     }
     
+    /// 前序遍历
     private func traversePreOrder(action: (Tree) -> Bool) {
         var tree: Tree? = self
         var stack = [Tree]()
@@ -412,6 +413,8 @@ class Tree<T: TreeValueProtocol> {
             }
         }
     }
+    
+    /// 中序遍历
     private func traverseInOrder(action: (Tree) -> Bool) {
         var tree: Tree? = self
         var stack = [Tree]()
@@ -429,6 +432,8 @@ class Tree<T: TreeValueProtocol> {
             }
         }
     }
+    
+    /// 后序遍历
     private func traversePostOrder(action: (Tree) -> Bool) {
         var tree: Tree? = self
         var stack = [Tree]()
@@ -465,6 +470,8 @@ class Tree<T: TreeValueProtocol> {
             }
         }
     }
+    
+    /// 层次遍历
     private func traverseLevelOrder(action: (Tree) -> Bool) {
         var queue = [self]
         var tree: Tree

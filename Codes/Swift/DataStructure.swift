@@ -570,6 +570,69 @@ class Tree<T: Comparable> {
     }
     
     
+    func delete(value: T) -> Tree<T>? {
+        if value == data {
+            if var father = right {
+                var tree: Tree<T>! = right?.left
+                while tree != nil {
+                    father = tree
+                    tree = tree.left
+                }
+                if tree == nil {
+                    right = father.right
+                }
+                
+                data = tree.data
+                father.left = tree.right
+                
+                if balance() == 2 {
+                    return rotateLL()
+                } else {
+                    return self
+                }
+            } else {
+                return left
+            }
+        }
+        
+        if value < data {
+            left = left?.delete(value: value)
+            if balance() == 2 { // 检查是否平衡
+                return rotateRR()
+            }
+        } else {
+            right = right?.delete(value: value)
+            if balance() == 2 {
+                return rotateLL()
+            }
+        }
+        return self
+    }
+    
+    class func delete(tree: Tree<T>!, value: T) -> Tree<T>? {
+        if tree == nil {
+            return nil
+        }
+        
+        if tree.data == value {
+            if tree.right != nil {
+                return delete(tree: tree.right, value: tree.right!.min.data)
+            } else if tree.left != nil {
+                return delete(tree: tree.left, value: tree.left!.data)
+            } else {
+                return tree
+            }
+        }
+        
+        if tree.data < value {
+            tree.right = delete(tree: tree.right, value: value)
+            return tree
+        } else {
+            tree.left = delete(tree: tree.left, value: value)
+            return tree
+        }
+    }
+    
     // MARK: 深度计算
     
     /// 计算树的深度
@@ -591,14 +654,6 @@ class Tree<T: Comparable> {
         let top     = right
         right       = top?.left
         top?.left   = self
-        return top
-    }
-    
-    /// 左单旋
-    private func rotateLL(tree: Tree<T>?) -> Tree<T>? {
-        let top    = tree?.left
-        tree?.left = top?.right
-        top?.right = tree
         return top
     }
     /// 左单旋

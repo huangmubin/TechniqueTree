@@ -533,8 +533,50 @@ class Tree<T: TreeValueProtocol> {
         return tree
     }
     
+    // MARK: - 二叉平衡树 AVL 树
+    
     func insert(value: T) {
+        var tree = self
+        var fathers = [self]
         
+        // 插入
+        insertLoop: while true {
+            if value == tree.data {
+                break insertLoop
+            } else if value < tree.data {
+                if let left = tree.right {
+                    tree = left
+                    fathers.append(tree)
+                } else {
+                    tree.left = Tree(data: value)
+                    break insertLoop
+                }
+            } else if value > tree.data {
+                if let right = tree.right {
+                    tree = right
+                    fathers.append(tree)
+                } else {
+                    tree.right = Tree(data: value)
+                    break insertLoop
+                }
+            }
+        }
+        
+        // 平衡
+        var point: Tree<T>
+        while fathers.count > 0 {
+            point = fathers.removeLast()
+            
+        }
+    }
+    
+    
+    var balance: Int {
+        var trees = [Tree]()
+        var b: Int = 0
+        repeat {
+            
+        } while !trees.isEmpty
     }
 }
 

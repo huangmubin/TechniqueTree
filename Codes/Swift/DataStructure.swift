@@ -362,11 +362,7 @@ enum TraverseOrder {
     case level
 }
 
-protocol TreeValueProtocol: Comparable {
-    
-}
-
-class Tree<T: TreeValueProtocol> {
+class Tree<T: Comparable> {
     
     // MARK: Data
     
@@ -375,7 +371,6 @@ class Tree<T: TreeValueProtocol> {
     var left: Tree?
     
     init(data: T) {
-        
         self.data = data
     }
     
@@ -489,6 +484,18 @@ class Tree<T: TreeValueProtocol> {
         }
     }
     
+    func printTree() {
+        traverseLevelOrder {
+            if $0.left != nil {
+                print("\($0.data) - left  -> \($0.left?.data)")
+            }
+            if $0.right != nil {
+                print("\($0.data) - right -> \($0.right?.data)")
+            }
+            return true
+        }
+    }
+    
     // MARK: 搜索树
     
     func find(value: T) -> Tree? {
@@ -535,48 +542,83 @@ class Tree<T: TreeValueProtocol> {
     
     // MARK: - 二叉平衡树 AVL 树
     
-    func insert(value: T) {
-        var tree = self
-        var fathers = [self]
+    func insert(value: T) -> Tree<T>? {
+        if value == data {
+            return self
+        }
         
-        // 插入
-        insertLoop: while true {
-            if value == tree.data {
-                break insertLoop
-            } else if value < tree.data {
-                if let left = tree.right {
-                    tree = left
-                    fathers.append(tree)
+        if value < data {
+            left = left?.insert(value: value) ?? Tree(data: value)
+            if balance() == 2 { // 检查是否平衡
+                if value < left!.data {
+                    return rotateLL()
                 } else {
-                    tree.left = Tree(data: value)
-                    break insertLoop
+                    return rotateLR()
                 }
-            } else if value > tree.data {
-                if let right = tree.right {
-                    tree = right
-                    fathers.append(tree)
+            }
+        } else {
+            right = right?.insert(value: value) ?? Tree(data: value)
+            if balance() == 2 { // 检查是否平衡
+                if value > right!.data {
+                    return rotateRR()
                 } else {
-                    tree.right = Tree(data: value)
-                    break insertLoop
+                    return rotateRL()
                 }
             }
         }
-        
-        // 平衡
-        var point: Tree<T>
-        while fathers.count > 0 {
-            point = fathers.removeLast()
-            
-        }
+        return self
     }
     
     
-    var balance: Int {
-        var trees = [Tree]()
-        var b: Int = 0
-        repeat {
-            
-        } while !trees.isEmpty
+    // MARK: 深度计算
+    
+    /// 计算树的深度
+    func depth() -> Int {
+        let l = left?.depth() ?? -1
+        let r = right?.depth() ?? -1
+        return l >= r ? l + 1 : r + 1
+    }
+    
+    /// 计算树的平衡度
+    func balance() -> Int {
+        return abs((left == nil ? 0 : left!.depth() + 1) - (right == nil ? 0 : right!.depth() + 1))
+    }
+    
+    // MARK: 左右旋转
+    
+    /// 右单旋
+    private func rotateRR() -> Tree<T>? {
+        let top     = right
+        right       = top?.left
+        top?.left   = self
+        return top
+    }
+    
+    /// 左单旋
+    private func rotateLL(tree: Tree<T>?) -> Tree<T>? {
+        let top    = tree?.left
+        tree?.left = top?.right
+        top?.right = tree
+        return top
+    }
+    /// 左单旋
+    private func rotateLL() -> Tree<T>? {
+        let top    = left
+        left       = top?.right
+        top?.right = self
+        return top
+    }
+    
+    /// 右左双旋
+    private func rotateRL() -> Tree<T>? {
+        right = right?.rotateLL()
+        return rotateRR()
+    }
+    
+    /// 左右双旋
+    private func rotateLR() -> Tree<T>? {
+        left = left?.rotateRR()
+        return rotateLL()
     }
 }
 

@@ -498,8 +498,8 @@ class Tree<T: Comparable> {
     
     // MARK: 搜索树
     
-    func find(value: T) -> Tree? {
-        var tree: Tree? = self
+    func find(value: T) -> Tree<T>? {
+        var tree: Tree<T>? = self
         while tree != nil {
             if tree!.data == value {
                 return tree
@@ -512,8 +512,8 @@ class Tree<T: Comparable> {
         return nil
     }
     
-    func find(where compare: (Tree) -> Bool?) -> Tree? {
-        var tree: Tree? = self
+    func find(where compare: (Tree<T>) -> Bool?) -> Tree<T>? {
+        var tree: Tree<T>? = self
         while tree != nil {
             if let result = compare(tree!) {
                 tree = result ? tree?.left : tree?.right
@@ -524,7 +524,7 @@ class Tree<T: Comparable> {
         return nil
     }
     
-    var min: Tree {
+    var minNode: Tree<T> {
         var tree = self
         while tree.left != nil {
             tree = tree.left!
@@ -532,7 +532,7 @@ class Tree<T: Comparable> {
         return tree
     }
     
-    var max: Tree {
+    var maxNode: Tree<T> {
         var tree = self
         while tree.right != nil {
             tree = tree.right!
@@ -549,6 +549,7 @@ class Tree<T: Comparable> {
         
         if value < data {
             left = left?.insert(value: value) ?? Tree(data: value)
+            left?.updateDepth()
             if balance() == 2 { // 检查是否平衡
                 if value < left!.data {
                     return rotateLL()
@@ -558,6 +559,7 @@ class Tree<T: Comparable> {
             }
         } else {
             right = right?.insert(value: value) ?? Tree(data: value)
+            right?.updateDepth()
             if balance() == 2 { // 检查是否平衡
                 if value > right!.data {
                     return rotateRR()
@@ -569,6 +571,116 @@ class Tree<T: Comparable> {
         return self
     }
     
+    func insertLoop(value: T) -> Tree<T>? {
+        
+        var tree: Tree<T>! = self
+        var stack = [Tree<T>](repeating: self, count: 100)
+        var i = 0
+        
+        // 插入数据
+        while true {
+            // 如果数据重复退出
+            if value == tree.data {
+                return self
+            }
+            
+            // 进入左树进行插入
+            if value < tree.data {
+                if let left = tree.left {
+                    stack[i] = tree
+                    i += 1
+                    tree = left
+                } else {
+                    tree.left = Tree(data: value)
+                    if tree.right == nil {
+                        tree._depth = 1
+                    } else {
+                        tree._depth = 0
+                        return self
+                    }
+                    break
+                }
+                continue
+            }
+            
+            // 进入右树进行插入
+            if let right = tree.right {
+                stack[i] = tree
+                i += 1
+                tree = right
+            } else {
+                tree.right = Tree(data: value)
+                if tree.left == nil {
+                    tree._depth = 1
+                } else {
+                    tree._depth = 0
+                    return self
+                }
+                break
+            }
+        }
+        
+        while !(i < 1) {
+            tree = stack[i-1]
+            i -= 1
+            
+            tree.updateDepth()
+            if tree.balance() < 2 {
+                continue
+            }
+            
+            if value < tree.data {
+                if value < tree.left!.data {
+                    if i < 1 {
+                        return tree.rotateLL()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateLL()
+                        } else {
+                            stack[i-1].right = tree.rotateLL()
+                        }
+                        return self
+                    }
+                } else {
+                    if i < 1 {
+                        return tree.rotateLR()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateLR()
+                        } else {
+                            stack[i-1].right = tree.rotateLR()
+                        }
+                        return self
+                    }
+                }
+            } else {
+                if value > tree.right!.data {
+                    if i < 1 {
+                        return tree.rotateRR()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateRR()
+                        } else {
+                            stack[i-1].right = tree.rotateRR()
+                        }
+                        return self
+                    }
+                } else {
+                    if i < 1 {
+                        return tree.rotateRL()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateRL()
+                        } else {
+                            stack[i-1].right = tree.rotateRL()
+                        }
+                        return self
+                    }
+                }
+            }
+        }
+        return self
+    }
     
     func delete(value: T) -> Tree<T>? {
         if value == data {
@@ -616,7 +728,7 @@ class Tree<T: Comparable> {
         
         if tree.data == value {
             if tree.right != nil {
-                return delete(tree: tree.right, value: tree.right!.min.data)
+                return delete(tree: tree.right, value: tree.right!.minNode.data)
             } else if tree.left != nil {
                 return delete(tree: tree.left, value: tree.left!.data)
             } else {
@@ -635,6 +747,18 @@ class Tree<T: Comparable> {
     
     // MARK: 深度计算
     
+    private var _depth = 0
+    private var _balance = 0
+    
+    func updateDepth() {
+        _depth = max((left?._depth ?? -1), (right?._depth ?? -1)) + 1
+    }
+    
+    func updateBalance() {
+        updateDepth()
+        _balance = abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
+    }
+    
     /// 计算树的深度
     func depth() -> Int {
         let l = left?.depth() ?? -1
@@ -642,9 +766,15 @@ class Tree<T: Comparable> {
         return l >= r ? l + 1 : r + 1
     }
     
+    func balance2() -> Int {
+        return (left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1)
+    }
+    
     /// 计算树的平衡度
     func balance() -> Int {
-        return abs((left == nil ? 0 : left!.depth() + 1) - (right == nil ? 0 : right!.depth() + 1))
+        //return abs((left == nil ? 0 : left!.depth() + 1) - (right == nil ? 0 : right!.depth() + 1))
+        
+        return abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
     }
     
     // MARK: 左右旋转
@@ -654,6 +784,9 @@ class Tree<T: Comparable> {
         let top     = right
         right       = top?.left
         top?.left   = self
+        
+        self.updateDepth()
+        top?.updateDepth()
         return top
     }
     /// 左单旋
@@ -661,6 +794,9 @@ class Tree<T: Comparable> {
         let top    = left
         left       = top?.right
         top?.right = self
+        
+        self.updateDepth()
+        top?.updateDepth()
         return top
     }
     

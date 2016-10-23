@@ -35,4 +35,10 @@ public class Tools {
         return Int(value, radix: radix) ?? 0
     }
     
+    // MARK: - 获取随机数
+    
+    public class func randomInRange(range: Range<Int>) -> Int {
+        return  Int(arc4random_uniform(UInt32(range.count))) + range.lowerBound
+    }
+    
 }

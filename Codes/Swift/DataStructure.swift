@@ -748,16 +748,16 @@ class Tree<T: Comparable> {
     // MARK: 深度计算
     
     private var _depth = 0
-    private var _balance = 0
+//    private var _balance = 0
     
     func updateDepth() {
         _depth = max((left?._depth ?? -1), (right?._depth ?? -1)) + 1
     }
     
-    func updateBalance() {
-        updateDepth()
-        _balance = abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
-    }
+//    func updateBalance() {
+//        updateDepth()
+//        _balance = abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
+//    }
     
     /// 计算树的深度
     func depth() -> Int {
@@ -766,9 +766,9 @@ class Tree<T: Comparable> {
         return l >= r ? l + 1 : r + 1
     }
     
-    func balance2() -> Int {
-        return (left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1)
-    }
+//    func balance2() -> Int {
+//        return (left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1)
+//    }
     
     /// 计算树的平衡度
     func balance() -> Int {

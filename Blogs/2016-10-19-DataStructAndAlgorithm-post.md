@@ -815,8 +815,459 @@ class Tree<T: TreeValueProtocol> {
     * SBT
         * 更易于实现
 
----
+#### 平衡二叉树 Swift 实现
 
+---
+class Tree<T: Comparable> {
+    
+    // MARK: Data
+    
+    var data: T
+    var right: Tree?
+    var left: Tree?
+    
+    init(data: T) {
+        self.data = data
+    }
+    
+    // MARK: 遍历 
+    
+    /// 遍历该树的以及其子树。
+    func traverse(use: TraverseOrder, handle: (Tree) -> Bool) {
+        switch use {
+        case .pre:
+            traversePreOrder(action: handle)
+        case .in:
+            traverseInOrder(action: handle)
+        case .post:
+            traversePostOrder(action: handle)
+        case .level:
+            traverseLevelOrder(action: handle)
+        }
+    }
+    
+    /// 前序遍历
+    private func traversePreOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                if !action(tree!) {
+                    return
+                }
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    /// 中序遍历
+    private func traverseInOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            if !stack.isEmpty {
+                tree = stack.removeLast()
+                if !action(tree!) {
+                    return
+                }
+                tree = tree?.right;
+            }
+        }
+    }
+    
+    /// 后序遍历
+    private func traversePostOrder(action: (Tree) -> Bool) {
+        var tree: Tree? = self
+        var stack = [Tree]()
+        var output = [Tree]()
+        while tree != nil || !stack.isEmpty {
+            center: while tree != nil {
+                stack.append(tree!)
+                tree = tree?.left
+            }
+            right: while !stack.isEmpty {
+                tree = stack.removeLast()
+                if tree?.right != nil {
+                    if output.contains(where: { $0 === tree?.right }) {
+                        output.append(tree!)
+                        if !action(tree!) {
+                            return
+                        }
+                        continue
+                    }
+                    
+                    stack.append(tree!)
+                    tree = tree?.right
+                    break right
+                }
+                
+                if !output.contains(where: { $0 === tree }) {
+                    output.append(tree!)
+                    if !action(tree!) {
+                        return
+                    }
+                } else {
+                    return
+                }
+            }
+        }
+    }
+    
+    /// 层次遍历
+    private func traverseLevelOrder(action: (Tree) -> Bool) {
+        var queue = [self]
+        var tree: Tree
+        while !queue.isEmpty {
+            tree = queue.removeFirst()
+            if !action(tree) {
+                return
+            }
+            if let left = tree.left {
+                queue.append(left)
+            }
+            if let right = tree.right {
+                queue.append(right)
+            }
+        }
+    }
+    
+    func printTree() {
+        traverseLevelOrder {
+            if $0.left != nil {
+                print("\($0.data) - left  -> \($0.left?.data)")
+            }
+            if $0.right != nil {
+                print("\($0.data) - right -> \($0.right?.data)")
+            }
+            return true
+        }
+    }
+    
+    // MARK: 搜索树
+    
+    func find(value: T) -> Tree<T>? {
+        var tree: Tree<T>? = self
+        while tree != nil {
+            if tree!.data == value {
+                return tree
+            } else if tree!.data > value {
+                tree = tree?.left
+            } else {
+                tree = tree?.right
+            }
+        }
+        return nil
+    }
+    
+    func find(where compare: (Tree<T>) -> Bool?) -> Tree<T>? {
+        var tree: Tree<T>? = self
+        while tree != nil {
+            if let result = compare(tree!) {
+                tree = result ? tree?.left : tree?.right
+            } else {
+                return tree
+            }
+        }
+        return nil
+    }
+    
+    var minNode: Tree<T> {
+        var tree = self
+        while tree.left != nil {
+            tree = tree.left!
+        }
+        return tree
+    }
+    
+    var maxNode: Tree<T> {
+        var tree = self
+        while tree.right != nil {
+            tree = tree.right!
+        }
+        return tree
+    }
+    
+    // MARK: - 二叉平衡树 AVL 树
+    
+    func insert(value: T) -> Tree<T>? {
+        if value == data {
+            return self
+        }
+        
+        if value < data {
+            left = left?.insert(value: value) ?? Tree(data: value)
+            left?.updateDepth()
+            if balance() == 2 { // 检查是否平衡
+                if value < left!.data {
+                    return rotateLL()
+                } else {
+                    return rotateLR()
+                }
+            }
+        } else {
+            right = right?.insert(value: value) ?? Tree(data: value)
+            right?.updateDepth()
+            if balance() == 2 { // 检查是否平衡
+                if value > right!.data {
+                    return rotateRR()
+                } else {
+                    return rotateRL()
+                }
+            }
+        }
+        return self
+    }
+    
+    func insertLoop(value: T) -> Tree<T>? {
+        
+        var tree: Tree<T>! = self
+        var stack = [Tree<T>](repeating: self, count: 100)
+        var i = 0
+        
+        // 插入数据
+        while true {
+            // 如果数据重复退出
+            if value == tree.data {
+                return self
+            }
+            
+            // 进入左树进行插入
+            if value < tree.data {
+                if let left = tree.left {
+                    stack[i] = tree
+                    i += 1
+                    tree = left
+                } else {
+                    tree.left = Tree(data: value)
+                    if tree.right == nil {
+                        tree._depth = 1
+                    } else {
+                        tree._depth = 0
+                        return self
+                    }
+                    break
+                }
+                continue
+            }
+            
+            // 进入右树进行插入
+            if let right = tree.right {
+                stack[i] = tree
+                i += 1
+                tree = right
+            } else {
+                tree.right = Tree(data: value)
+                if tree.left == nil {
+                    tree._depth = 1
+                } else {
+                    tree._depth = 0
+                    return self
+                }
+                break
+            }
+        }
+        
+        while !(i < 1) {
+            tree = stack[i-1]
+            i -= 1
+            
+            tree.updateDepth()
+            if tree.balance() < 2 {
+                continue
+            }
+            
+            if value < tree.data {
+                if value < tree.left!.data {
+                    if i < 1 {
+                        return tree.rotateLL()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateLL()
+                        } else {
+                            stack[i-1].right = tree.rotateLL()
+                        }
+                        return self
+                    }
+                } else {
+                    if i < 1 {
+                        return tree.rotateLR()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateLR()
+                        } else {
+                            stack[i-1].right = tree.rotateLR()
+                        }
+                        return self
+                    }
+                }
+            } else {
+                if value > tree.right!.data {
+                    if i < 1 {
+                        return tree.rotateRR()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateRR()
+                        } else {
+                            stack[i-1].right = tree.rotateRR()
+                        }
+                        return self
+                    }
+                } else {
+                    if i < 1 {
+                        return tree.rotateRL()
+                    } else {
+                        if value < stack[i-1].data {
+                            stack[i-1].left  = tree.rotateRL()
+                        } else {
+                            stack[i-1].right = tree.rotateRL()
+                        }
+                        return self
+                    }
+                }
+            }
+        }
+        return self
+    }
+    
+    func delete(value: T) -> Tree<T>? {
+        if value == data {
+            if var father = right {
+                var tree: Tree<T>! = right?.left
+                while tree != nil {
+                    father = tree
+                    tree = tree.left
+                }
+                if tree == nil {
+                    right = father.right
+                }
+                
+                data = tree.data
+                father.left = tree.right
+                
+                if balance() == 2 {
+                    return rotateLL()
+                } else {
+                    return self
+                }
+            } else {
+                return left
+            }
+        }
+        
+        if value < data {
+            left = left?.delete(value: value)
+            if balance() == 2 { // 检查是否平衡
+                return rotateRR()
+            }
+        } else {
+            right = right?.delete(value: value)
+            if balance() == 2 {
+                return rotateLL()
+            }
+        }
+        return self
+    }
+    
+    class func delete(tree: Tree<T>!, value: T) -> Tree<T>? {
+        if tree == nil {
+            return nil
+        }
+        
+        if tree.data == value {
+            if tree.right != nil {
+                return delete(tree: tree.right, value: tree.right!.minNode.data)
+            } else if tree.left != nil {
+                return delete(tree: tree.left, value: tree.left!.data)
+            } else {
+                return tree
+            }
+        }
+        
+        if tree.data < value {
+            tree.right = delete(tree: tree.right, value: value)
+            return tree
+        } else {
+            tree.left = delete(tree: tree.left, value: value)
+            return tree
+        }
+    }
+    
+    // MARK: 深度计算
+    
+    private var _depth = 0
+//    private var _balance = 0
+    
+    func updateDepth() {
+        _depth = max((left?._depth ?? -1), (right?._depth ?? -1)) + 1
+    }
+    
+//    func updateBalance() {
+//        updateDepth()
+//        _balance = abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
+//    }
+    
+    /// 计算树的深度
+    func depth() -> Int {
+        let l = left?.depth() ?? -1
+        let r = right?.depth() ?? -1
+        return l >= r ? l + 1 : r + 1
+    }
+    
+//    func balance2() -> Int {
+//        return (left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1)
+//    }
+    
+    /// 计算树的平衡度
+    func balance() -> Int {
+        //return abs((left == nil ? 0 : left!.depth() + 1) - (right == nil ? 0 : right!.depth() + 1))
+        
+        return abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
+    }
+    
+    // MARK: 左右旋转
+    
+    /// 右单旋
+    private func rotateRR() -> Tree<T>? {
+        let top     = right
+        right       = top?.left
+        top?.left   = self
+        
+        self.updateDepth()
+        top?.updateDepth()
+        return top
+    }
+    /// 左单旋
+    private func rotateLL() -> Tree<T>? {
+        let top    = left
+        left       = top?.right
+        top?.right = self
+        
+        self.updateDepth()
+        top?.updateDepth()
+        return top
+    }
+    
+    /// 右左双旋
+    private func rotateRL() -> Tree<T>? {
+        right = right?.rotateLL()
+        return rotateRR()
+    }
+    
+    /// 左右双旋
+    private func rotateLR() -> Tree<T>? {
+        left = left?.rotateRR()
+        return rotateLL()
+    }
+}
 ---
 
 # 常用算法 Algorithm

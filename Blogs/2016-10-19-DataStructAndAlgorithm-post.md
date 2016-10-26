@@ -1354,7 +1354,38 @@ class Heap<T> {
 
 ---
 
-## 图
+## 图 (Graph)
+
+表示多对多的关系。
+
+* 顶点集合 V (Vertex)
+* 边的集合 E (Edge)
+    * (v, w) ∈ E 表示 v -- w 之间的无向边 E 
+    * <v, w> ∈ E 表示 v -> w 之间的有向边 E 
+    * 不考虑重边和自回路
+* 数据对象集 G (V, E) 由一个非空的有限顶点集合 V 和一个有限边集合 E 组成
+* 操作集合
+    * Graph Create(); 建立并返回空图
+    * Graph InsertVertex(Graph G, Vertex v); 插入顶点
+    * Graph InsertEdge(Graph G, Edge e); 插入边
+    * void DFS(Graph G, Vertex v); 从 v 开始深度优先遍历
+    * void BFS(Graph G, Vertex v); 从 v 开始广度优先遍历
+    * void ShortestPath(Graph G, Vertex v, int Dist[]); 计算 v 到任意其他顶点的最短距离
+    * void MST(Graph G); 计算最小生成树
+    * ...
+* 相关术语
+    * 无向图: 全双向，方向不重要
+    * 有向图: 单双皆有，方向重要
+    * 网络: 带权重的图
+* 图的表示方法
+    * 邻接矩阵 G[N][N]
+    * N 表示顶点。
+    * G[i][j] 表示 i j 之间有没有边。
+    * G[i][i] 肯定都为 0
+    * G[i][j] == G[j][i]
+    * 数组表示法：长度为 N(N+1)/2，Eij = G[i*(i+1)/2+j] 
+
+
 
 # 常用算法 Algorithm
 
@@ -1363,5 +1394,7 @@ class Heap<T> {
 * 算法评判标准
     * 空间复杂度 S(n)
     * 时间复杂度 T(n)
+
+
 
 

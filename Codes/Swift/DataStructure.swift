@@ -748,16 +748,10 @@ class Tree<T: Comparable> {
     // MARK: 深度计算
     
     private var _depth = 0
-//    private var _balance = 0
     
     func updateDepth() {
         _depth = max((left?._depth ?? -1), (right?._depth ?? -1)) + 1
     }
-    
-//    func updateBalance() {
-//        updateDepth()
-//        _balance = abs((left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1))
-//    }
     
     /// 计算树的深度
     func depth() -> Int {
@@ -765,10 +759,6 @@ class Tree<T: Comparable> {
         let r = right?.depth() ?? -1
         return l >= r ? l + 1 : r + 1
     }
-    
-//    func balance2() -> Int {
-//        return (left == nil ? 0 : left!._depth + 1) - (right == nil ? 0 : right!._depth + 1)
-//    }
     
     /// 计算树的平衡度
     func balance() -> Int {
@@ -813,4 +803,42 @@ class Tree<T: Comparable> {
     }
 }
 
+// MARK: - 堆 (优先队列) 有序数组实现
 
+class Heap<T> {
+    
+    var datas: [T] = []
+    var complare: (T, T) -> Bool
+    
+    init(type: @escaping (T, T) -> Bool) {
+        self.complare = type
+    }
+    
+    var isEmpty: Bool { return datas.isEmpty }
+    var count: Int { return datas.count }
+    
+    func insert(_ value: T) {
+        if datas.isEmpty {
+            datas.append(value)
+            return
+        }
+        
+        if complare(value, datas[0]) {
+            datas.insert(value, at: 0)
+            return
+        }
+        var p = datas.count/2
+        var i = datas.count-1
+        while p != i {
+            if complare(value, datas[p]) {
+                i = p
+                p = p / 2
+            } else {
+                
+            }
+        }
+        datas.insert(value, at: p)
+    }
+    
+    
+}

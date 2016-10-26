@@ -817,7 +817,9 @@ class Tree<T: TreeValueProtocol> {
 
 #### 平衡二叉树 Swift 实现
 
----
+永远保持平衡的特殊树。关键在于插入删除的时候需要对位置进行调整，可以让查找的效率变得最高。
+
+```
 class Tree<T: Comparable> {
     
     // MARK: Data
@@ -1268,6 +1270,20 @@ class Tree<T: Comparable> {
         return rotateLL()
     }
 }
+```
+
+## 堆 优先队列(Priority Queue)
+
+优先队列，按元素的优先权来取出元素，而不是按进入队列的顺序。有最大堆 (MaxHeap) 和最小堆 (MinHeap)
+
+* 数组实现: (插入 O(1), 查找 O(n), 删除 O(n))
+* 链表实现: (插入 O(1), 查找 O(n), 删除 O(1))
+* 有序数组: (插入 O(log2n), 查找 O(log2n), 删除 O(1))
+* 有序链表: (插入 O(n), 查找 O(1), 删除 O(1))
+* 完全二叉树: (插入 O(log2(n)), 查找 O(1), 删除 O(1))
+
+
+
 ---
 
 # 常用算法 Algorithm

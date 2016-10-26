@@ -1282,9 +1282,79 @@ class Tree<T: Comparable> {
 * 有序链表: (插入 O(n), 查找 O(1), 删除 O(1))
 * 完全二叉树: (插入 O(log2(n)), 查找 O(1), 删除 O(1))
 
+### Swift 有序数组实现堆
 
+```Swift
+// MARK: - 堆 (优先队列) 有序数组实现
+
+class Heap<T> {
+    
+    var datas: [T] = []
+    var compare: (T, T) -> Bool
+    
+    init(_ operater: @escaping (T, T) -> Bool) {
+        self.compare = operater
+    }
+    
+    var isEmpty: Bool { return datas.isEmpty }
+    var count: Int { return datas.count }
+    
+    func insert(_ value: T) {
+        if datas.isEmpty {
+            datas.append(value)
+            return
+        }
+        
+        var l = -1
+        var h = datas.count
+        var m = 0
+        while l < h-1 {
+            m = (l + h) / 2
+            if compare(value, datas[m]) {
+                h = m
+            } else {
+                l = m
+            }
+        }
+        datas.insert(value, at: h)
+    }
+    
+    func remove() -> T? {
+        if datas.isEmpty {
+            return nil
+        } else {
+            return datas.removeLast()
+        }
+    }
+}
+```
+
+## 哈夫曼树 Huffman Tree
+
+哈夫曼树是一种判定树，通过权值来对节点进行组织。
+
+哈夫曼树每次都把权值最小的两个节点合并，成为一颗新的哈夫曼树。节点的父节点的权值就是他们的权值合。
+
+使用最小堆来组织，可以每次都获取到最小值。
+
+* 没有度为 1 的节点。
+* 如果 n = 叶节点，总节点数 = 2n - 1
+* 左右子树交换后依然是哈夫曼树，哈夫曼树没有左右之分。
+* 同一组权值，可能产生多棵不同构的哈夫曼树
+
+```Swift
+// 哈夫曼树的构造方法
+
+
+```
+
+### 哈夫曼编码
+
+使用二叉树来进行编码。把数据排列成为哈夫曼树，并且所有的字符都在叶节点上，然后利用树左0右1的方式，进行编码。
 
 ---
+
+## 图
 
 # 常用算法 Algorithm
 

@@ -808,10 +808,10 @@ class Tree<T: Comparable> {
 class Heap<T> {
     
     var datas: [T] = []
-    var complare: (T, T) -> Bool
+    var compare: (T, T) -> Bool
     
-    init(type: @escaping (T, T) -> Bool) {
-        self.complare = type
+    init(_ operater: @escaping (T, T) -> Bool) {
+        self.compare = operater
     }
     
     var isEmpty: Bool { return datas.isEmpty }
@@ -823,22 +823,25 @@ class Heap<T> {
             return
         }
         
-        if complare(value, datas[0]) {
-            datas.insert(value, at: 0)
-            return
-        }
-        var p = datas.count/2
-        var i = datas.count-1
-        while p != i {
-            if complare(value, datas[p]) {
-                i = p
-                p = p / 2
+        var l = -1
+        var h = datas.count
+        var m = 0
+        while l < h-1 {
+            m = (l + h) / 2
+            if compare(value, datas[m]) {
+                h = m
             } else {
-                
+                l = m
             }
         }
-        datas.insert(value, at: p)
+        datas.insert(value, at: h)
     }
     
-    
+    func remove() -> T? {
+        if datas.isEmpty {
+            return nil
+        } else {
+            return datas.removeLast()
+        }
+    }
 }

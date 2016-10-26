@@ -354,6 +354,18 @@ isinstance('abc', Iterable) // str是否可迭代
 ['AX', 'AY', 'AZ', 'BX', 'BY', 'BZ', 'CX', 'CY', 'CZ']
 ```
 
+# 错误调试
+
+error name 可以使用 BaseException，所有错误都是它派生的。
+
+```
+try:
+    ...
+except <error name>, e:
+    ...
+finally:
+    ...
+```
 
 ---
 

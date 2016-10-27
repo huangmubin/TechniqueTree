@@ -845,3 +845,19 @@ class Heap<T> {
         }
     }
 }
+
+
+// MARK: - 图 Graph
+
+class Graph<T> {
+    
+    var data: T
+    
+    init(data: T) {
+        self.data = data
+    }
+    
+    var nears: [Graph] = []
+    
+    
+}

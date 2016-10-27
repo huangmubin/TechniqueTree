@@ -1368,7 +1368,7 @@ class Heap<T> {
     * Graph Create(); 建立并返回空图
     * Graph InsertVertex(Graph G, Vertex v); 插入顶点
     * Graph InsertEdge(Graph G, Edge e); 插入边
-    * void DFS(Graph G, Vertex v); 从 v 开始深度优先遍历
+    * void DFS(Graph G, Vertex v); 从 v 开始深度优先遍历 (Depth First Search)
     * void BFS(Graph G, Vertex v); 从 v 开始广度优先遍历
     * void ShortestPath(Graph G, Vertex v, int Dist[]); 计算 v 到任意其他顶点的最短距离
     * void MST(Graph G); 计算最小生成树
@@ -1377,13 +1377,39 @@ class Heap<T> {
     * 无向图: 全双向，方向不重要
     * 有向图: 单双皆有，方向重要
     * 网络: 带权重的图
+    * 邻接点: 有直接边相邻的点
+    * 连通: 如果从 V 到 W 存在一条路径，则 V 到 W 是连通的。
+    * 路径: V 到 W 的路径是一系列的顶点集合 {V, v1, v2 ..., W} 
+        * 路径长度: 路径中边数的和(带权重，则是权重和)
+        * 简单路径: 如果 V 到 W 之间所有顶点都不同，则是简单路径
+    * 回路: 起点等于终点的路径
+    * 连通图: 图中任意两点都连通
+    * 连通分量: 无向图的极大连通子图
+        * 极大的顶点数: 再加一个顶点就不连通了
+        * 极大的边数: 所有该顶点连同的所有边
+    * 强连通: 有向图
+        * V W 双向连同
+        * 强连通分量
 * 图的表示方法
     * 邻接矩阵 G[N][N]
-    * N 表示顶点。
-    * G[i][j] 表示 i j 之间有没有边。
-    * G[i][i] 肯定都为 0
-    * G[i][j] == G[j][i]
-    * 数组表示法：长度为 N(N+1)/2，Eij = G[i*(i+1)/2+j] 
+        * N 表示顶点。
+        * G[i][j] 表示 i j 之间有没有边。
+        * G[i][i] 肯定都为 0
+        * G[i][j] == G[j][i]
+        * 数组表示法：长度为 N(N+1)/2，Eij = G[i*(i+1)/2+j] 
+        * 适合稠密图，特别是完全图
+   * 邻接表 G[N] 指针数组
+       * 每一个 N 只存自己有对应边的节点链表
+       * 适合稀疏图
+* 遍历
+    * 深度优先搜索 (Depth First Search, DFS)
+        * 类似于树的先序遍历
+        * 邻接表存储图: 复杂度 O(N+E)
+        * 邻接矩阵存储图: 复杂度 O(N^2)
+    * 广度优先搜索 (Breadth First Search, BFS)
+        * 类似于树的层序遍历
+        * 邻接表存储图: 复杂度 O(N+E)
+        * 邻接矩阵存储图: 复杂度 O(N^2)
 
 
 

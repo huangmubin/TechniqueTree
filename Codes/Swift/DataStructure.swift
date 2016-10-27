@@ -860,4 +860,56 @@ class Graph<T> {
     var nears: [Graph] = []
     
     
+    var visited: [Graph] = []
+    var out = false
+    func depthFirstSearch(where compare: (Graph) -> Void) {
+        for near in nears {
+            if !visited.contains(where: { $0 === near }) {
+                visited.append(near)
+                compare(near)
+            }
+            if out {
+                visited.removeAll(keepingCapacity: true)
+                return
+            }
+        }
+    }
+    
+    func depthFirstSearch2(where compare: (Graph) -> Void) {
+        var queue = [self]
+        var visited = [Graph]()
+        while !queue.isEmpty {
+            let node = queue.removeFirst()
+            if visited.contains(where: { $0 === node }) {
+                continue
+            } else {
+                visited.append(node)
+                compare(node)
+                if out {
+                    return
+                }
+            }
+            queue = node.nears + queue
+        }
+    }
+    
+    func breadthFirstSearch(where compare: (Graph) -> Bool) {
+        
+        var queue = [self]
+        var visited = [Graph]()
+        
+        while !queue.isEmpty {
+            let node = queue.removeFirst()
+            visited.append(node)
+            if compare(node) {
+            } else {
+                return
+            }
+            for near in nears {
+                if !visited.contains(where: { $0 === near }) {
+                    queue.append(near)
+                }
+            }
+        }
+    }
 }

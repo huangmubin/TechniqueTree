@@ -851,14 +851,17 @@ class Heap<T> {
 
 class Graph<T> {
     
+    /// 数据
     var data: T
+    /// 邻接点
+    var nears: [Graph] = []
     
     init(data: T) {
         self.data = data
     }
     
-    var nears: [Graph] = []
     
+    // MARK: 遍历
     
     var visited: [Graph] = []
     var out = false
@@ -901,8 +904,7 @@ class Graph<T> {
         while !queue.isEmpty {
             let node = queue.removeFirst()
             visited.append(node)
-            if compare(node) {
-            } else {
+            if !compare(node) {
                 return
             }
             for near in nears {
@@ -911,5 +913,38 @@ class Graph<T> {
                 }
             }
         }
+    }
+    
+    // MARK: 最短路径
+    // 无权图的单源最短路径算法
+    var previous: Graph?
+    func unweightedPath(where compare: (Graph) -> Bool) -> [Graph] {
+        // 清除 previous 指针
+        self.breadthFirstSearch {
+            $0.previous = nil
+            return true
+        }
+        
+        // 使用广度优先遍历查找路径
+        var queue = [self]
+        while !queue.isEmpty {
+            var node: Graph! = queue.removeFirst()
+            if !compare(node) {
+                queue.removeAll()
+                while node.previous != nil {
+                    queue.insert(node, at: 0)
+                    node = node.previous
+                    node.previous = nil
+                }
+                return queue
+            }
+            for near in node.nears {
+                if near.previous == nil {
+                    near.previous = node
+                    queue.append(near)
+                }
+            }
+        }
+        return []
     }
 }

@@ -3,7 +3,7 @@ layout: post
 title: "Python 3"
 description: "Python 学习笔记"
 date: 2016-10-25
-tags: [Python]
+tags: [Language]
 comments: true
 share: false
 ---

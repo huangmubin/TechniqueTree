@@ -3,7 +3,7 @@ layout: post
 title: "C Language"
 description: "记录 C 语言相关内容"
 date: 2016-10-15
-tags: [C]
+tags: [Language]
 comments: true
 share: false
 ---

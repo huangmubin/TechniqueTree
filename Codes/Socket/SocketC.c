@@ -8,7 +8,7 @@
 
 // MARK: - Include
 
-#include "SocketC.h"
+// #include "SocketC.h"
 
 // MARK: Socket
 
@@ -162,7 +162,7 @@ int socket_c_listen(const char * addr,int port){
     }
 }
 
-/**  */
+/** 等待连接 */
 int socket_c_accept(int sock, char * remoteip, int * remoteport) {
     socklen_t clilen;
     struct sockaddr_in cli_addr;
@@ -235,6 +235,7 @@ void enable_broadcast(int socket_fd){
     int reuseon   = 1;
     setsockopt( socket_fd, SOL_SOCKET, SO_BROADCAST, &reuseon, sizeof(reuseon) );
 }
+
 int socket_c_get_server_ip(char *host,char *ip){
     struct hostent *hp;
     struct sockaddr_in addr;

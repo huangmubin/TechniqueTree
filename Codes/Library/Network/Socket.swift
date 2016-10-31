@@ -10,9 +10,11 @@ import Foundation
 
 // MAKR: - Import SocketC
 
+@_silgen_name("socket_c_close") func c_close(sock: Int32) -> Int32
+@_silgen_name("socket_c_shutdown") func c_shutdown(sock: Int32, type: Int32) -> Int32
+
 // MARK: TCP
 
-@_silgen_name("socket_c_close") func c_close(sock: Int32) -> Int32
 @_silgen_name("socket_c_connect") func c_connet(host: UnsafePointer<Int8>, port: Int32, timeout: Int32, ipv: Int32) -> Int32
 @_silgen_name("socket_c_read") func c_read(sock: Int32, data: UnsafePointer<UInt8>, len: Int32, timeout: Int32) -> Int32
 @_silgen_name("socket_c_write") func c_write(sock: Int32, data: UnsafePointer<UInt8>, len: Int32) -> Int32
@@ -25,7 +27,7 @@ import Foundation
 @_silgen_name("socket_c_recive") func c_recive(sock: Int32, data: UnsafePointer<UInt8>, len: Int32, address: UnsafePointer<Int8>, port: UnsafePointer<Int32>) -> Int32
 @_silgen_name("socket_c_client") func c_client() -> Int32
 @_silgen_name("socket_c_get_server_ip") func c_get_server_ip(host: UnsafePointer<Int8>, ip: UnsafePointer<Int8>) -> Int32
-@_silgen_name("socket_c_sentto") func c_sentto(sock: Int32, data: UnsafePointer<UInt8>, len: Int32, address: UnsafePointer<UInt8>, port: Int32) -> Int32
+@_silgen_name("socket_c_sendto") func c_sentto(sock: Int32, data: UnsafePointer<UInt8>, len: Int32, address: UnsafePointer<UInt8>, port: Int32) -> Int32
 @_silgen_name("enable_broadcast") func c_enable_broadcast(sock: Int32)
 
 
@@ -42,12 +44,38 @@ public class Socket {
         self.port    = 0
     }
     
+}
+
+// MARK: Socket Function
+
+extension Socket {
     
     /// 关闭套接字
     func close() -> Bool {
         if let s = sock {
             if c_close(sock: s) == 0 {
                 return true
+            }
+        }
+        return false
+    }
+    
+    enum ShutDown: Int32 {
+        case read
+        case write
+        case read_write
+        
+    }
+    /// 断开连接
+    func shutdown(type: ShutDown) -> Bool {
+        if let s = sock {
+            switch type {
+            case .read:
+                return c_shutdown(sock: s, type: SHUT_RD) == 0
+            case .write:
+                return c_shutdown(sock: s, type: SHUT_WR) == 0
+            case .read_write:
+                return c_shutdown(sock: s, type: SHUT_RDWR) == 0
             }
         }
         return false
@@ -159,6 +187,17 @@ extension TCP {
             return Array(buffer[0 ..< Int(size)])
         }
         return nil
+    }
+    
+    
+    /// 清理数据
+    func clear() {
+        while true {
+            if (read(length: 1024, timeout: 1)?.count ?? 0) < 1024 {
+                return
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
     }
     
 }

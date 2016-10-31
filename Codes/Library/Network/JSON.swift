@@ -185,3 +185,34 @@ class JSON {
         return []
     }
 }
+
+extension JSON {
+    
+    /// 将类型转换成 Json 字符串(未测试)
+    class func jsonstring(data: Any) -> String {
+        var result = ""
+        if let dic = data as? [String: Any] {
+            result += "{"
+            for (k, v) in dic {
+                if v is Int || v is Double || v is Float {
+                    result += "\"\(k)\":\(v),"
+                } else if v is String {
+                    result += "\"\(k)\":\"\(k)\","
+                } else {
+                    result += "\(jsonstring(data: v)),"
+                }
+            }
+            result.remove(at: result.index(before: result.endIndex))
+            result += "}"
+        } else if let arr = data as? [Any] {
+            result += "{"
+            for a in arr {
+                result += "\(jsonstring(data: a)),"
+            }
+            result.remove(at: result.index(before: result.endIndex))
+            result += "}"
+        }
+        return result
+    }
+    
+}

@@ -48,6 +48,11 @@ int socket_c_close(int socket) {
     return close(socket);
 }
 
+/** 断开连接 */
+int socket_c_shutdown(int socket, int howto) {
+    return shutdown(socket, howto);
+}
+
 // MARK: - TCP
 
 /** 根据地址进行 Socket 连接 */
@@ -249,7 +254,7 @@ int socket_c_get_server_ip(char *host,char *ip){
     return 0;
 }
 //send message to addr and port
-int socket_c_sentto(int socket_fd,char *msg,int len, char *toaddr, int topotr){
+int socket_c_sendto(int socket_fd,char *msg,int len, char *toaddr, int topotr){
     struct sockaddr_in addr;
     socklen_t addrlen=sizeof(addr);
     memset(&addr, 0x0, sizeof(struct sockaddr_in));

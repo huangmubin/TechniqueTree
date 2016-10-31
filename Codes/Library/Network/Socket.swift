@@ -31,7 +31,7 @@ import Foundation
 
 // MARK: - Scoket
 
-class Socket {
+public class Socket {
     
     var address: String
     var port: Int32
@@ -57,7 +57,7 @@ class Socket {
 
 // MARK: - TCP
 
-class TCP: Socket {
+public class TCP: Socket {
     
     init(address: String, port: Int32) {
         super.init()
@@ -167,7 +167,7 @@ extension TCP {
 // MARK: - UDP
 
 
-class UDP: Socket {
+public class UDP: Socket {
     
     init?(address: String, port: Int32, server: Bool) {
         super.init()

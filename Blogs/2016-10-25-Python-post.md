@@ -371,6 +371,44 @@ finally:
 
 ---
 
+
+# 文件读取和保存
+
+```
+import os
+
+import os
+print(os.getcwd())
+os.chdir('C:\Python33\HeadFirstPython\chapter3')
+man=[]
+other=[]
+try:
+    data=open("sketch.txt")
+    for each_line in data:
+        try:
+            (role, line_spoken)=each_line.split(':', 1)
+            line_spoken=line_spoken.strip()
+            if role=='Man':
+                man.append(line_spoken)
+            elif role=='Other Man':
+                other.append(line_spoken)
+        except ValueError:
+                pass
+    data.close()
+except IOError:
+    print('The datafile is missing!')
+try:
+    man_file=open('man.txt', 'w')      #以w模式访问文件man.txt
+    other_file=open('other.txt','w')   #以w模式访问文件other.txt
+    print (man, file=man_file)           #将列表man的内容写到文件中
+    print (other, file=other_file)
+except IOError:
+    print ('File error')
+finally:
+    man_file.close()
+    other_file.close()
+```
+
 # 模拟浏览器 Selenium
 
 ## 环境配置
@@ -486,4 +524,85 @@ time.sleep(3)
 browser.quit()
 ```
 
+# Socket
+
+```
+import socket     #socket模块
+import commands   #执行系统命令模块
+import sys        
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 创建 AF_INET STREAM 的 socket 文件
+
+host = "127.0.0.1"
+port = 1234
+
+# 服务端
+sock.bind((host, port))
+sock.listen(1)
+
+client, address = sock.accept() # 接受TCP连接，并返回新的套接字与IP地址
+
+# 客户端
+
+sock.connect((host, port))
+
+
+# 接收发送
+sock.sendall("")
+sock.send("")
+sock.recv("")
+
+# 关闭套接字
+sock.close()
+
+```
+
+[参考博客](http://blog.csdn.net/rebelqsp/article/details/22109925)
+
+```
+
+socket函数
+描述
+服务端socket函数
+s.bind(address) 将套接字绑定到地址, 在AF_INET下,以元组（host,port）的形式表示地址.
+s.listen(backlog) 开始监听TCP传入连接。backlog指定在拒绝连接之前，操作系统可以挂起的最大连接数量。该值至少为1，大部分应用程序设为5就可以了。
+s.accept()
+接受TCP连接并返回（conn,address）,其中conn是新的套接字对象，可以用来接收和发送数据。address是连接客户端的地址。
+客户端socket函数
+s.connect(address)
+连接到address处的套接字。一般address的格式为元组（hostname,port），如果连接出错，返回socket.error错误。
+s.connect_ex(adddress)
+功能与connect(address)相同，但是成功返回0，失败返回errno的值。
+公共socket函数
+s.recv(bufsize[,flag])
+接受TCP套接字的数据。数据以字符串形式返回，bufsize指定要接收的最大数据量。flag提供有关消息的其他信息，通常可以忽略。
+s.send(string[,flag])
+发送TCP数据。将string中的数据发送到连接的套接字。返回值是要发送的字节数量，该数量可能小于string的字节大小。
+s.sendall(string[,flag])
+完整发送TCP数据。将string中的数据发送到连接的套接字，但在返回之前会尝试发送所有数据。成功返回None，失败则抛出异常。
+s.recvfrom(bufsize[.flag])
+接受UDP套接字的数据。与recv()类似，但返回值是（data,address）。其中data是包含接收数据的字符串，address是发送数据的套接字地址。
+s.sendto(string[,flag],address)
+发送UDP数据。将数据发送到套接字，address是形式为（ipaddr，port）的元组，指定远程地址。返回值是发送的字节数。
+s.close()
+关闭套接字。
+s.getpeername()
+返回连接套接字的远程地址。返回值通常是元组（ipaddr,port）。
+s.getsockname()
+返回套接字自己的地址。通常是一个元组(ipaddr,port)
+s.setsockopt(level,optname,value)
+设置给定套接字选项的值。
+s.getsockopt(level,optname[.buflen])
+返回套接字选项的值。
+s.settimeout(timeout)
+设置套接字操作的超时期，timeout是一个浮点数，单位是秒。值为None表示没有超时期。一般，超时期应该在刚创建套接字时设置，因为它们可能用于连接的操作（如connect()）
+s.gettimeout()
+返回当前超时期的值，单位是秒，如果没有设置超时期，则返回None。
+s.fileno()
+返回套接字的文件描述符。
+s.setblocking(flag)
+如果flag为0，则将套接字设为非阻塞模式，否则将套接字设为阻塞模式（默认值）。非阻塞模式下，如果调用recv()没有发现任何数据，或send()调用无法立即发送数据，那么将引起socket.error异常。
+s.makefile()
+创建一个与该套接字相关连的文件
+```
 

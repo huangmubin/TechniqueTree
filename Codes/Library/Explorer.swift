@@ -13,7 +13,7 @@ import Foundation
 /**
  用于管理文件的类
  */
-public class Explorer: NSObject {
+public class Explorer {
     
     // MAKR: - File Managers
     

@@ -409,6 +409,16 @@ finally:
     other_file.close()
 ```
 
+# 控制 Shell
+
+```
+import os
+import sys
+
+os.system("cd ~")
+os.system("./git.sh" + sys.argv[0] + " " + sys.argv[1])
+```
+
 # 模拟浏览器 Selenium
 
 ## 环境配置

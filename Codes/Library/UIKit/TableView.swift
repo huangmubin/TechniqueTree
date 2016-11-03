@@ -22,7 +22,7 @@ protocol CellViewProtocol {
 
 // MARK: - TableView
 
-class TableView: UITableView {
+class MTableView: UITableView {
 
     @IBInspectable var identify: String = ""
     var datas: [[ResourceDataModelProtocol]] = [[]]
@@ -41,7 +41,7 @@ class TableView: UITableView {
     
 }
 
-extension TableView: UITableViewDataSource {
+extension MTableView: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return datas.count

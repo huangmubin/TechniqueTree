@@ -306,25 +306,39 @@ else
     then
         echo "updata"
 
+        echo "TestProjects"
         cd ~/TestProjects
         git add *
         git commit -m "update"
+        git push
+
+        echo "TechniqueTree"
+
         cd ~/TechniqueTree
         git add *
         git commit -m "update"
+        git push
     else
         echo "$*"
+
+        echo "TestProjects"
 
         cd ~/TestProjects
         git add *
         git commit -m "$*"
+        git push
+
+        echo "TechniqueTree"
+
         cd ~/TechniqueTree
         git add *
         git commit -m "$*"
+        git push
     fi
 fi
 
 echo "End."
+
 ```
 
 

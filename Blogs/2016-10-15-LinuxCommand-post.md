@@ -293,51 +293,39 @@ $ cat /etc/group | grep -E "<condition>"
 ```
 #!/bin/bash
 
-echo "Start!"
+pathes=(~/TestProjects ~/TechniqueTree)
 
-if [ $1 == "pull" ]
-then
-    cd ~/TestProjects
+function gitpull() {
+    cd $1
     git pull
-    cd ~/TechniqueTree
-    git pull
+    echo "git pull $1"
+    echo
+}
+
+function gitpush() {
+    cd $1
+    git add *
+    git commit -m "$2"
+    git push
+    echo "git push $1 commit $2"
+    echo
+}
+
+if [ $# == 0 ]; then
+    for path in ${pathes[@]}; do
+        gitpush $path "update"
+    done
 else
-    if [ $1 == "" ]
-    then
-        echo "updata"
-
-        echo "TestProjects"
-        cd ~/TestProjects
-        git add *
-        git commit -m "update"
-        git push
-
-        echo "TechniqueTree"
-
-        cd ~/TechniqueTree
-        git add *
-        git commit -m "update"
-        git push
+    if [ $1 == "pull" ]; then
+        for path in ${pathes[@]}; do
+            gitpull ${path}
+        done
     else
-        echo "$*"
-
-        echo "TestProjects"
-
-        cd ~/TestProjects
-        git add *
-        git commit -m "$*"
-        git push
-
-        echo "TechniqueTree"
-
-        cd ~/TechniqueTree
-        git add *
-        git commit -m "$*"
-        git push
+        for path in ${pathes[@]}; do
+            gitpush $path "$*"
+        done
     fi
 fi
-
-echo "End."
 
 ```
 

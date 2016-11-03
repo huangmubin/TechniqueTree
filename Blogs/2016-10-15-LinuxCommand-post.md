@@ -286,3 +286,45 @@ $ cat /etc/group | grep -E "<condition>"
 	* -f 向下递归
 	* -r 强行删除
 
+# shell 脚本
+
+## 自动 git
+
+```
+#!/bin/bash
+
+echo "Start!"
+
+if [ $1 == "pull" ]
+then
+    cd ~/TestProjects
+    git pull
+    cd ~/TechniqueTree
+    git pull
+else
+    if [ $1 == "" ]
+    then
+        echo "updata"
+
+        cd ~/TestProjects
+        git add *
+        git commit -m "update"
+        cd ~/TechniqueTree
+        git add *
+        git commit -m "update"
+    else
+        echo "$*"
+
+        cd ~/TestProjects
+        git add *
+        git commit -m "$*"
+        cd ~/TechniqueTree
+        git add *
+        git commit -m "$*"
+    fi
+fi
+
+echo "End."
+```
+
+

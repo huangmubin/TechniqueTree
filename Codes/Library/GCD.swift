@@ -10,6 +10,11 @@ import UIKit
 
 class GCD: NSObject {
     
-    
+    func ddd() {
+        let queue = DispatchQueue(label: "dd")
+        queue.sync(flags: DispatchWorkItemFlags.barrier) {
+            
+        }
+    }
     
 }

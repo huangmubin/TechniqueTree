@@ -6,8 +6,11 @@
 //  Copyright © 2016年 Langpai. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
+// MARK: - Notify
+
+/** 对 Notification 进行包裹，并提供建议的访问方法。 */
 class Notify {
 
     var notification: Notification
@@ -24,9 +27,9 @@ class Notify {
     
 }
 
+// MARK: - Notifiers Ptorocol
 
-// MARK: Notifiers Ptorocol
-
+/** 通知器协议，遵守该协议的对象即可拥有监听，取消监听以及发送消息的功能。 */
 protocol Notifiers { }
 extension Notifiers {
     

@@ -11,7 +11,9 @@ import UIKit
 // MARK: - Layouter Class
 
 /**
- 自动布局应用
+ 自动布局类。
+    Layouer: 主类。每次设置布局时创建
+    Container: 副类。用于布局时存储 NSLayoutConstraint
  */
 class Layouter {
 
@@ -21,11 +23,12 @@ class Layouter {
     
     // MARK: Init
     
-    init(superview: UIView, view: UIView, relative: UIView? = nil) {
+    init(superview: UIView, view: UIView, relative: UIView? = nil, container: Layouter.Container? = nil) {
         self.superview = superview
         self.view = view
         self.relative = relative ?? superview
         self.view.translatesAutoresizingMaskIntoConstraints = true
+        self._contrainer = container
     }
     
     func setViews(view: UIView? = nil, relative: UIView? = nil) -> Layouter {
@@ -40,6 +43,8 @@ class Layouter {
     }
     
     // MARK: Constraints
+    
+    /* 每次添加 Layout 之后，都会把生成的 NSLayoutConstraint 存储到 _constrants。除非 Layouter 被释放或主动调用 clearConstrants，否则不会被释放。 */
     
     fileprivate var _constrants: [NSLayoutConstraint] = []
     
@@ -59,7 +64,9 @@ class Layouter {
     
     // MARK: Contrainer
     
-    var _contrainer: Layouter.Container?
+    /* 在设置 Layout 的中间进行 Container 添加操作。 */
+    
+    weak var _contrainer: Layouter.Container?
     
     func setContrainer(_ con: Layouter.Container) -> Layouter {
         _contrainer = con
@@ -335,7 +342,10 @@ extension Layouter {
 // MARK: - Layout Operations
 
 extension Layouter {
-    
+ 
+    /*
+     通过运算付来进行 Layout 设置。
+     */
     class Operation {
         weak var view: UIView!
         var attribute: NSLayoutAttribute
@@ -347,8 +357,6 @@ extension Layouter {
         init(view: UIView, attribute: NSLayoutAttribute) {
             self.view = view
             self.attribute = attribute
-            
-            
         }
     }
     

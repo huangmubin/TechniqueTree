@@ -86,6 +86,16 @@ class CalendarInfo {
         return calendar.date(from: calendar.dateComponents([.year, .month], from: date))
     }
     
+    func firstDayInWeek() -> Date? {
+        var weekFirst: Date = Date()
+        var interval: TimeInterval = 0
+        if calendar.dateInterval(of: .weekOfYear, start: &weekFirst, interval: &interval, for: date) {
+            return weekFirst
+        } else {
+            return nil
+        }
+    }
+    
     func firstTimeInDay() -> Date? {
         return calendar.date(from: calendar.dateComponents([.year, .month, .day], from: date))
     }
@@ -94,6 +104,11 @@ class CalendarInfo {
     
     func adding(time: TimeInterval) -> Date {
         return date.addingTimeInterval(time)
+    }
+    
+    func offset(time: TimeInterval) -> CalendarInfo {
+        let new = date.addingTimeInterval(time)
+        return CalendarInfo(identifier: calendar.identifier, date: new)
     }
     
 }
@@ -146,6 +161,10 @@ extension CalendarInfo {
         case hour   = 3600.0
         case day    = 86400.0
         case week   = 604800.0
+        
+        subscript(offset: Int) -> Double {
+            return rawValue * Double(offset)
+        }
     }
     
 }
@@ -181,4 +200,16 @@ extension CalendarInfo {
         ]
     )
     
+    var chineseYear: String {
+        return CalendarInfo.Chinese.Era[(year - 1) % 60]
+    }
+    var chineseZodiac: String {
+        return CalendarInfo.Chinese.Zodiacs[(year - 1) % 12]
+    }
+    var chineseMonth: String {
+        return CalendarInfo.Chinese.Months[month - 1]
+    }
+    var chineseDay: String {
+        return CalendarInfo.Chinese.Days[day - 1]
+    }
 }

@@ -12,15 +12,19 @@ import UIKit
 
 @objc protocol LoopCollectionViewDelegate: NSObjectProtocol {
     
+    // MARK: Request
     func loopCollection(loopView: LoopCollectionView, numberOfItemsInSection section: Int) -> Int
     func loopCollection(loopView: LoopCollectionView, cellForItem cell: LoopCollectionViewCell, atSection section: Int, row: Int)
     func loopCollection(loopView: LoopCollectionView, headerForItem header: UICollectionReusableView, atSection section: Int)
     
-    
+    // MARK: Visible
     @objc optional func loopCollection(loopView: LoopCollectionView, layout: UICollectionViewLayout, sizeForHeaderInSection section: Int) -> CGSize
     @objc optional func loopCollection(loopView: LoopCollectionView, layout: UICollectionViewLayout, sizeForItemAtSection section: Int, row: Int) -> CGSize
     @objc optional func loopCollection(loopView: LoopCollectionView, willDisplay cell: LoopCollectionViewCell, atSection section: Int, row: Int)
     @objc optional func loopCollection(loopView: LoopCollectionView, willDisplayHeader header: UICollectionReusableView, atSection section: Int)
+    
+    // MARK: Select
+    @objc optional func loopCollection(loopView: LoopCollectionView, didSelectItemAt section: Int, row: Int)
 }
 
 // MARK: - Loop Collection View Cell
@@ -45,12 +49,14 @@ class LoopCollectionView: UICollectionView {
         self.delegate   = self
         self.loopDelegate = delegate
         self.reloadData()
-        self.scrollToOrigin()
+        self.scrollToOffset()
     }
     
-    func scrollToOrigin() {
+    func scrollToOffset(offset: Int = 0, animated: Bool = false) {
         DispatchQueue.main.async {
-            self.scrollToItem(at: IndexPath(item: 0, section: self.origin), at: .top, animated: false)
+            let index = IndexPath(item: 0, section: self.origin + offset)
+            self.scrollToItem(at: index, at: .top, animated: animated)
+            self.scrollToItem(at: index, at: .left, animated: animated)
         }
     }
     
@@ -66,9 +72,43 @@ class LoopCollectionView: UICollectionView {
     
     weak var loopDelegate: LoopCollectionViewDelegate?
     
-    var origin: Int = 5000
+    @IBInspectable var origin: Int = 5000
     
 }
+
+// MARK: - Count Property
+
+extension LoopCollectionView {
+    
+    var visibleItems: [LoopCollectionViewCell] {
+        let cells = self.visibleCells.sorted(by: {
+             ($0 as! LoopCollectionViewCell).section < ($1 as! LoopCollectionViewCell).section
+        })
+        let range = (self.contentOffset.x - 5, self.contentOffset.y - 5, self.contentOffset.x + self.bounds.width - 5, self.contentOffset.y + self.bounds.height - 5)
+        return cells.flatMap({
+            if $0.frame.origin.x > range.0 &&
+               $0.frame.origin.y > range.1 &&
+               $0.frame.origin.x < range.2 &&
+               $0.frame.origin.y < range.3 {
+               return $0 as? LoopCollectionViewCell
+            }
+            return nil
+        })
+    }
+    
+}
+
+// MARK: - Update
+
+extension LoopCollectionView {
+    
+    func reloadVisibleItems() {
+        self.reloadItems(at: self.indexPathsForVisibleItems)
+    }
+    
+}
+
+// MARK: - UICollectionViewDataSource
 
 extension LoopCollectionView: UICollectionViewDataSource {
     
@@ -97,6 +137,8 @@ extension LoopCollectionView: UICollectionViewDataSource {
     
 }
 
+// MARK: - UICollectionViewDelegate
+
 extension LoopCollectionView: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -109,7 +151,13 @@ extension LoopCollectionView: UICollectionViewDelegate {
         }
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        loopDelegate?.loopCollection?(loopView: self, didSelectItemAt: indexPath.section - origin, row: indexPath.row)
+    }
+    
 }
+
+// MARK: - UICollectionViewDelegateFlowLayout
 
 extension LoopCollectionView: UICollectionViewDelegateFlowLayout {
     

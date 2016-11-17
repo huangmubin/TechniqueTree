@@ -25,6 +25,9 @@ import UIKit
     
     // MARK: Select
     @objc optional func loopCollection(loopView: LoopCollectionView, didSelectItemAt section: Int, row: Int)
+    
+    // MARK: Scroll
+    @objc optional func loopCollection(loopView: LoopCollectionView, didEndScrollingAnimation inSection: Int)
 }
 
 // MARK: - Loop Collection View Cell
@@ -96,6 +99,22 @@ extension LoopCollectionView {
         })
     }
     
+    var firstVisibleItem: LoopCollectionViewCell? {
+        let cells = self.visibleCells.sorted(by: {
+            ($0 as! LoopCollectionViewCell).section < ($1 as! LoopCollectionViewCell).section
+        })
+        let range = (self.contentOffset.x - 5, self.contentOffset.y - 5, self.contentOffset.x + self.bounds.width - 5, self.contentOffset.y + self.bounds.height - 5)
+        for cell in cells {
+            if cell.frame.origin.x > range.0 &&
+                cell.frame.origin.y > range.1 &&
+                cell.frame.origin.x < range.2 &&
+                cell.frame.origin.y < range.3{
+                return cell as? LoopCollectionViewCell
+            }
+        }
+        return nil
+    }
+    
 }
 
 // MARK: - Update
@@ -105,6 +124,23 @@ extension LoopCollectionView {
     func reloadVisibleItems() {
         self.reloadItems(at: self.indexPathsForVisibleItems)
     }
+    
+}
+
+// MARK: - UIScroll View
+
+extension LoopCollectionView: UIScrollViewDelegate {
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: self.visibleItems[0].section)
+    }
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: self.visibleItems[0].section)
+        }
+    }
+    
     
 }
 
@@ -154,6 +190,8 @@ extension LoopCollectionView: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         loopDelegate?.loopCollection?(loopView: self, didSelectItemAt: indexPath.section - origin, row: indexPath.row)
     }
+    
+    
     
 }
 

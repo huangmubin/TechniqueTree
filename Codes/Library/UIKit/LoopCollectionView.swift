@@ -13,9 +13,9 @@ import UIKit
 @objc protocol LoopCollectionViewDelegate: NSObjectProtocol {
     
     // MARK: Request
-    func loopCollection(loopView: LoopCollectionView, numberOfItemsInSection section: Int) -> Int
-    func loopCollection(loopView: LoopCollectionView, cellForItem cell: LoopCollectionViewCell, atSection section: Int, row: Int)
-    func loopCollection(loopView: LoopCollectionView, headerForItem header: UICollectionReusableView, atSection section: Int)
+    @objc optional func loopCollection(loopView: LoopCollectionView, numberOfItemsInSection section: Int) -> Int
+    @objc optional func loopCollection(loopView: LoopCollectionView, cellForItem cell: LoopCollectionViewCell, atSection section: Int, row: Int)
+    @objc optional func loopCollection(loopView: LoopCollectionView, headerForItem header: UICollectionReusableView, atSection section: Int)
     
     // MARK: Visible
     @objc optional func loopCollection(loopView: LoopCollectionView, layout: UICollectionViewLayout, sizeForHeaderInSection section: Int) -> CGSize
@@ -87,15 +87,16 @@ extension LoopCollectionView {
         let cells = self.visibleCells.sorted(by: {
              ($0 as! LoopCollectionViewCell).section < ($1 as! LoopCollectionViewCell).section
         })
-        let range = (self.contentOffset.x - 5, self.contentOffset.y - 5, self.contentOffset.x + self.bounds.width - 5, self.contentOffset.y + self.bounds.height - 5)
+        let range = (self.contentOffset.x, self.contentOffset.y, self.contentOffset.x + self.bounds.width, self.contentOffset.y + self.bounds.height)
         return cells.flatMap({
-            if $0.frame.origin.x > range.0 &&
-               $0.frame.origin.y > range.1 &&
-               $0.frame.origin.x < range.2 &&
-               $0.frame.origin.y < range.3 {
-               return $0 as? LoopCollectionViewCell
+            let center = ($0.bounds.width / 2, $0.bounds.height / 2)
+            if  $0.frame.origin.x + center.0 < range.0 ||
+                $0.frame.origin.y + center.1 < range.1 ||
+                $0.frame.origin.x + center.0 > range.2 ||
+                $0.frame.origin.y + center.1 > range.3 {
+                return nil
             }
-            return nil
+            return $0 as? LoopCollectionViewCell
         })
     }
     
@@ -103,12 +104,13 @@ extension LoopCollectionView {
         let cells = self.visibleCells.sorted(by: {
             ($0 as! LoopCollectionViewCell).section < ($1 as! LoopCollectionViewCell).section
         })
-        let range = (self.contentOffset.x - 5, self.contentOffset.y - 5, self.contentOffset.x + self.bounds.width - 5, self.contentOffset.y + self.bounds.height - 5)
+        let range = (self.contentOffset.x, self.contentOffset.y, self.contentOffset.x + self.bounds.width, self.contentOffset.y + self.bounds.height)
         for cell in cells {
-            if cell.frame.origin.x > range.0 &&
-                cell.frame.origin.y > range.1 &&
-                cell.frame.origin.x < range.2 &&
-                cell.frame.origin.y < range.3{
+            let center = (cell.bounds.width / 2, cell.bounds.height / 2)
+            if  cell.frame.origin.x + center.0 < range.0 ||
+                cell.frame.origin.y + center.1 < range.1 ||
+                cell.frame.origin.x + center.0 > range.2 ||
+                cell.frame.origin.y + center.1 > range.3 {
                 return cell as? LoopCollectionViewCell
             }
         }
@@ -131,13 +133,26 @@ extension LoopCollectionView {
 
 extension LoopCollectionView: UIScrollViewDelegate {
     
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        //print("scrollViewDidEndScrollingAnimation")
+        if let cell = self.firstVisibleItem {
+            loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: cell.section)
+        }
+    }
+    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: self.visibleItems[0].section)
+        //print("scrollViewDidEndDecelerating")
+        if let cell = self.firstVisibleItem {
+            loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: cell.section)
+        }
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        //print("scrollViewDidEndDragging")
         if !decelerate {
-            loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: self.visibleItems[0].section)
+            if let cell = self.firstVisibleItem {
+                loopDelegate?.loopCollection?(loopView: self, didEndScrollingAnimation: cell.section)
+            }
         }
     }
     
@@ -153,7 +168,10 @@ extension LoopCollectionView: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return loopDelegate?.loopCollection(loopView: self, numberOfItemsInSection: section - origin) ?? 0
+        if loopDelegate == nil {
+            return 0
+        }
+        return loopDelegate?.loopCollection?(loopView: self, numberOfItemsInSection: section - origin) ?? 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -161,13 +179,13 @@ extension LoopCollectionView: UICollectionViewDataSource {
         cell.section = indexPath.section - origin
         cell.row = indexPath.row
         cell.collection = self
-        loopDelegate?.loopCollection(loopView: self, cellForItem: cell, atSection: indexPath.section - origin, row: indexPath.row)
+        loopDelegate?.loopCollection?(loopView: self, cellForItem: cell, atSection: indexPath.section - origin, row: indexPath.row)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let item = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerIdentifier, for: indexPath)
-        loopDelegate?.loopCollection(loopView: self, headerForItem: item, atSection: indexPath.section - origin)
+        loopDelegate?.loopCollection?(loopView: self, headerForItem: item, atSection: indexPath.section - origin)
         return item
     }
     

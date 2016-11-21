@@ -6,8 +6,6 @@
 //  Copyright © 2016年 Myron. All rights reserved.
 //
 
-import UIKit
-
 import Foundation
 
 // MARK: Calendar Infos

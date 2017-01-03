@@ -27,14 +27,14 @@ class Layouter {
         self.superview = superview
         self.view = view
         self.relative = relative ?? superview
-        self.view.translatesAutoresizingMaskIntoConstraints = true
+        self.view.translatesAutoresizingMaskIntoConstraints = false
         self._contrainer = container
     }
     
     func setViews(view: UIView? = nil, relative: UIView? = nil) -> Layouter {
         if let view = view {
             self.view = view
-            self.view.translatesAutoresizingMaskIntoConstraints = true
+            self.view.translatesAutoresizingMaskIntoConstraints = false
         }
         if let view = relative {
             self.relative = view
@@ -53,6 +53,7 @@ class Layouter {
         return self
     }
     
+    @discardableResult
     func constrants(block: ([NSLayoutConstraint]) -> Void) -> Layouter {
         block(_constrants)
         return self
@@ -188,6 +189,7 @@ extension Layouter {
     }
     
     /// width and height
+    @discardableResult
     func size(w: CGFloat, h: CGFloat, priority: Float = 1000) -> Layouter {
         let _ = {
             let lay = NSLayoutConstraint(item: view, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: w)
@@ -313,7 +315,7 @@ extension Layouter {
 
 extension Layouter {
 
-    func edges(top: CGFloat = 0, bottom: CGFloat = 0, leading: CGFloat, trailing: CGFloat = 0) -> Layouter {
+    func edges(top: CGFloat = 0, bottom: CGFloat = 0, leading: CGFloat = 0, trailing: CGFloat = 0) -> Layouter {
         let _ = {
             let lay = NSLayoutConstraint(item: view, attribute: .top, relatedBy: .equal, toItem: superview, attribute: .top, multiplier: 1, constant: top)
             superview.addConstraint(lay)

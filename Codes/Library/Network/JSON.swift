@@ -35,6 +35,7 @@ class JSON {
     init(data: Data?) {
         if let d = data {
             if let json = try? JSONSerialization.jsonObject(with: d, options: JSONSerialization.ReadingOptions.allowFragments) {
+                //print("JSON init(data: Data?) \n\(json)")
                 self.json = json
                 self.temp = json
             }
@@ -45,6 +46,19 @@ class JSON {
     
     /// 通过下标层层解压
     subscript(keys: Any...) -> JSON {
+        var temp = self.temp
+        for value in keys {
+            if let json = temp as? [String: Any], let key = value as? String {
+                temp = json[key]
+            } else if let json = temp as? [Any], let key = value as? Int {
+                temp = json[key]
+            }
+        }
+        self.temp = temp
+        return self
+    }
+    
+    func value(_ keys: [Any]) -> JSON {
         var temp = self.temp
         for value in keys {
             if let json = temp as? [String: Any], let key = value as? String {
@@ -138,6 +152,26 @@ class JSON {
         }
     }
     
+    func doubleStr() -> Double {
+        if let value = temp as? String {
+            temp = json
+            return Double(value) ?? 0
+        } else {
+            temp = json
+            return 0
+        }
+    }
+    
+    func intStr(_ i: Int = 0) -> Int {
+        if let value = temp as? String {
+            temp = json
+            return Int(value) ?? i
+        } else {
+            temp = json
+            return i
+        }
+    }
+    
     /// 将解压出来的数据强转成指定的类型。
     func get<T>(_ keys: Any...) -> T? {
         var temp = self.temp
@@ -213,6 +247,16 @@ extension JSON {
             result += "}"
         }
         return result
+    }
+    
+    class func printjson(data: Data?) {
+        if let d = data {
+            if let json = try? JSONSerialization.jsonObject(with: d, options: JSONSerialization.ReadingOptions.allowFragments) {
+                print("JSON Print \n\(json);")
+                return
+            }
+        }
+        print("JSON Print nil;")
     }
     
 }

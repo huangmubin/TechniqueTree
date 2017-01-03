@@ -616,3 +616,26 @@ s.makefile()
 创建一个与该套接字相关连的文件
 ```
 
+
+# 批量拷贝文件
+
+```
+import shutil
+
+def func(x):
+     if i < 10:
+             return '000%d' % x
+     elif i < 100:
+             return '00%d' % x
+     elif i < 1000:
+             return '0%d' % x
+     else:
+             return x
+
+prefix = "string --"
+
+for j in range(10):
+	print "%s%s.mp4" % (str, func(j))
+	shutil.copyfile("Player.png", "%s%s.mp4" % (prefix, func(j)))
+```
+

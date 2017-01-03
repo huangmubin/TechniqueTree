@@ -8,289 +8,228 @@
 
 import Foundation
 
-// MARK: - Network
-/**
- 网络访问类
- */
-public class Network: NSObject {
-    
-    // MARK: Datas
-    
-    /// 标题
-    public var label: String
+// MARK: - Network 2
+
+public class Network: NSObject, URLSessionDataDelegate {
     
     
-    /// 网络会话
-    var session: URLSession!
-    /// 网络会话队列
-    var sessionQueue = OperationQueue()
+    // MARK: Data
     
+    public var id: String = ""
+    private var session: URLSession = URLSession(configuration: .default)
+    private var task: URLSessionDataTask?
     
-    /// 网络会话类型
-    let type: Network.SessionType
-    
-    
-    /// 网络队列最大并发数
-    var concurrentMax: Int = 1
-    /// 当前网络任务数量
-    var concuttentCount: Int {
-        var i = 0
-        tasks.forEach({ i += $0.running ? 1 : 0 })
-        return i
-    }
-    
-    
-    /// 任务队列
-    fileprivate var tasks: [Network.Task] = []
-    /// 操作队列
-    fileprivate let queue: DispatchQueue
-    
-    
-    /// 任务默认标示符
-    fileprivate var id: Int = 0
+    public var backQueue: DispatchQueue?
     
     // MARK: Init
     
-    /// 根据类型初始化网络会话。
-    init(label: String, type: Network.SessionType) {
-        self.type  = type
-        self.label = label
-        self.queue = DispatchQueue(label: label)
-        
-        /**************/
-        /* 设置网络会话 */
-        /**************/
+    init(id: String = "") {
+        opreateQueue = DispatchQueue(label: id)
         
         super.init()
-        
-        self.sessionQueue.maxConcurrentOperationCount = 1
-        switch type {
-        case .order:
-            session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: sessionQueue)
-        case .background:
-            session = URLSession(configuration: URLSessionConfiguration.background(withIdentifier: label), delegate: self, delegateQueue: sessionQueue)
-        case .upload:
-            session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: sessionQueue)
-        }
-        
+        self.id = id
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        session = URLSession(configuration: .default, delegate: self, delegateQueue: queue)
     }
     
-}
-
-// MARK: - Network Methods
-
-extension Network {
+    // MARK: Queue
     
-    fileprivate func resume() {
-        queue.async {
-            let count = self.concuttentCount
-            if count < self.concurrentMax {
-                for task in self.tasks {
-                    if !task.running {
-                        task.running = true
-                        task.task.resume()
-                        return
-                    }
+    var connecting: Response!
+    var waitingQueue: [Response] = []
+    var firstHeader: Bool = true
+    let opreateQueue: DispatchQueue
+    
+    private func connect() {
+        opreateQueue.async {
+            if self.connecting == nil && self.waitingQueue.count > 0 {
+                self.connecting = self.firstHeader ? self.waitingQueue.removeFirst() : self.waitingQueue.removeLast()
+                if let request = self.connecting.request {
+                    let task = self.session.dataTask(with: request)
+                    task.taskDescription = self.connecting?.id
+                    self.task = task
+                    task.resume()
+                } else {
+                    self.connect()
                 }
             }
         }
     }
     
-}
-
-// MARK: - Session Delegate
-
-// URLSessionDelegate URLSessionTaskDelegate URLSessionTaskDelegate
-extension Network: URLSessionDataDelegate, URLSessionDownloadDelegate {
+    // MARK: Methods
     
-    // MARK: URLSessionDelegate
-    /*
-    /// 检查下载证书
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Swift.Void) {
-        print("检查下载证书: \(challenge)")
-        completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil)
+    func response(id: String) -> Response? {
+        return opreateQueue.sync {
+            if let i = self.waitingQueue.index(where: { $0.id == id }) {
+                return self.waitingQueue[i]
+            }
+            return nil
+        }
     }
     
-    /// 证书无效错误
-    public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        print("证书无效错误: \(error)")
-    }
-    */
-    // MARK: URLSessionTaskDelegate
-    
-    
-    /**
-     发送特定任务的最后一次消息，如果任务已经完成 error 将会是 nil.
-     */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        self.queue.async {
-            if let index = self.tasks.index(where: { $0.task.taskDescription == task.taskDescription }) {
-                self.tasks[index].completeBlock?(self.tasks[index], error)
-                self.tasks.remove(at: index)
-                self.resume()
+    func first(id: String) {
+        opreateQueue.async {
+            if let i = self.waitingQueue.index(where: { $0.id == id }) {
+                let response = self.waitingQueue.remove(at: i)
+                if self.firstHeader {
+                    self.waitingQueue.insert(response, at: 0)
+                } else {
+                    self.waitingQueue.append(response)
+                }
             }
         }
     }
     
-    /*
-    /**
-     重定向网络任务。
-     让 HTTP 请求试图重定向到另一个 URL。你必须要调用 completionHandler 来允许重定向，通过一个修改后的 request 或传递 nil 来让该重定向响应的主体作为有效负载被传递过去。默认是在遵循重定向。
-     在后台会话中，重定向永远遵守，所以不会调用这个方法。
-     */
-    public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Swift.Void) {
-        completionHandler(nil)
+    func cancel(id: String? = nil) {
+        opreateQueue.async {
+            if let id = id {
+                if self.connecting?.id == id {
+                    self.task?.cancel()
+                } else {
+                    if let i = self.waitingQueue.index(where: { $0.id == id }) {
+                        self.waitingQueue.remove(at: i)
+                    }
+                }
+            } else {
+                self.waitingQueue.removeAll()
+                self.task?.cancel()
+            }
+        }
     }
     
-    /**
-     任务接收到请求的证书验证时调用。如果没有实现该方法，会话证书将会是 NOT, 并采用默认处理。
-     */
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Swift.Void) {
-        
+    func suspend() {
+        self.task?.suspend()
     }
     
-    /* Sent if a task requires a new, unopened body stream.  This may be
-     * necessary when authentication has failed for any request that
-     * involves a body stream.
-     */
-    /**
-     在任务需要一个新的还没开放的 body 流时调用。在认证失败的时候，可能必须给请求调用一个 body 流。
-     */
-    public func urlSession(_ session: URLSession, task: URLSessionTask, needNewBodyStream completionHandler: @escaping (InputStream?) -> Swift.Void) {
-        
+    func resume() {
+        self.task?.resume()
     }
     
-    /**
-     定期通知代理上传的进度，这还包括任务的性能信息。
-     */
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-        
+    // MARK: GET PUT
+    
+    func get(id: String? = nil, url: String, header: [String: String]? = nil, other: Any? = nil, receiveComplete: ((Response, Error?) -> Void)?) {
+        appendResponse(id: id ?? url, url: url, method: "GET", header: header, body: nil, time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
     }
     
-    /**
-     发送任务的完成状态信息
-     */
-    @available(OSX 10.12, *)
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        
+    func put(id: String? = nil, url: String, header: [String: String]? = nil, body: Any? = nil, other: Any? = nil, receiveComplete: ((Response, Error?) -> Void)?) {
+        appendResponse(id: id ?? url, url: url, method: "PUT", header: header, body: body == nil ? nil : Network.body(body!), time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
     }
-    */
     
-    // MARK: URLSessionTaskDelegate
+    func post(id: String? = nil, url: String, header: [String: String]? = nil, body: Any? = nil, other: Any? = nil, receiveComplete: ((Response, Error?) -> Void)?) {
+        appendResponse(id: id ?? url, url: url, method: "POST", header: header, body: body == nil ? nil : Network.body(body!), time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
+    }
+    
+    func delete(id: String? = nil, url: String, header: [String: String]? = nil, body: Any? = nil, other: Any? = nil, receiveComplete: ((Response, Error?) -> Void)?) {
+        appendResponse(id: id ?? url, url: url, method: "DELETE", header: header, body: body == nil ? nil : Network.body(body!), time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
+    }
+    
+    // MARK: Append Methods
+    
+    func appendResponse(id: String, url: String, method: String, header: [String: String]?, body: Data?, time: TimeInterval?, other: Any?, data: Data? = nil, receiveResponse: ((Response) -> Bool)?, receiveData: ((Response, Data) -> Void)?, receiveComplete: ((Response, Error?) -> Void)?) {
+        opreateQueue.async {
+            if self.waitingQueue.contains(where: { $0.id == id }) || self.connecting?.id == id {
+                return
+            }
+            
+            let response = Response()
+            response.id = id
+            response.url = url
+            response.method = method
+            response.header = header
+            response.body = body
+            response.time = time
+            response.other = other
+            response.data = data
+            
+            response.receiveResponse = receiveResponse
+            response.receiveData = receiveData
+            response.receiveComplete = receiveComplete
+            
+            self.waitingQueue.append(response)
+            self.connect()
+        }
+    }
+    
+    func append(id: String? = nil, url: String, method: String = "GET", header: [String: String]? = nil, body: Data? = nil, other: Any?, receiveComplete: ((Response, Error?) -> Void)?) {
+        appendResponse(id: id ?? url, url: url, method: method, header: header, body: body, time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
+    }
+    
+    @discardableResult
+    func link(id: String? = nil, url: String, method: String = "GET", header: [String: String]? = nil, body: Data? = nil, other: Any?, receiveComplete: ((Response, Error?) -> Void)?) -> Network {
+        appendResponse(id: id ?? url, url: url, method: method, header: header, body: body, time: nil, other: other, receiveResponse: nil, receiveData: nil, receiveComplete: receiveComplete)
+        return self
+    }
+    
+    // MARK: URLSessionDataDelegate
     
     /** 接收到响应 */
     @available(OSX 10.9, *)
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Swift.Void) {
-        self.queue.async {
-            if let index = self.tasks.index(where: { $0.task.taskDescription == dataTask.taskDescription }) {
-                self.tasks[index].taskResponse = response
-                self.tasks[index].responseBlock?(self.tasks[index])
+        opreateQueue.async {
+            print("\(self.id) \(self.connecting.id) - Response - \(response)")
+            self.connecting.response = response
+            if self.backQueue == nil {
+                if self.connecting.receiveResponse?(self.connecting) == false {
+                    completionHandler(.cancel)
+                    return
+                }
+            } else {
+                let connect = self.connecting!
+                self.backQueue?.async {
+                    if connect.receiveResponse?(connect) == false {
+                        completionHandler(.cancel)
+                        return
+                    }
+                }
             }
+            completionHandler(.allow)
         }
-        completionHandler(URLSession.ResponseDisposition.allow)
     }
     
     /** 接收到数据 */
     @available(OSX 10.9, *)
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        self.queue.async {
-            if let index = self.tasks.index(where: { $0.task.taskDescription == dataTask.taskDescription }) {
-                self.tasks[index].data.append(data)
-                self.tasks[index].dataSize = self.tasks[index].data.count
-                self.tasks[index].receiveBlock?(self.tasks[index], self.tasks[index].dataSize)
+        opreateQueue.async {
+            //print("\(self.id) \(self.connecting.id) - dataTask - \(data.count)")
+            if self.connecting.data == nil {
+                self.connecting.data = data
+            } else {
+                self.connecting.data?.append(data)
             }
-        }
-    }
-    
-    /*
-    /** 下载任务已经开始 */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome downloadTask: URLSessionDownloadTask) {
-        
-    }
-    
-    
-    /** 流任务已经开始 */
-    @available(OSX 10.11, *)
-    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome streamTask: URLSessionStreamTask) {
-        
-    }
-    
-    /** 即将缓存响应 */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, willCacheResponse proposedResponse: CachedURLResponse, completionHandler: @escaping (CachedURLResponse?) -> Swift.Void){
-        completionHandler(nil)
-    }
-    */
-    
-    // MARK: URLSessionDownloadDelegate
-    
-    /** URLSession Download 必须, 下载完成。必须在这里将下载好的文件进行转移。然后将会调用  URLSession:task:didCompleteWithError:  */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        self.queue.sync {
-            if let index = self.tasks.index(where: { $0.task.taskDescription == downloadTask.taskDescription }) {
-                self.tasks[index].downloadFinishBlock?(self.tasks[index], location)
-            }
-        }
-    }
-    
-    
-    /** 定期发送下载进度的通知 */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        self.queue.async {
-            if let index = self.tasks.index(where: { $0.task.taskDescription == downloadTask.taskDescription }) {
-                self.tasks[index].totalSize = Int(totalBytesWritten)
-                self.tasks[index].dataSize  = Int(bytesWritten)
-                self.tasks[index].receiveBlock?(self.tasks[index], self.tasks[index].dataSize)
-            }
-        }
-    }
-    
-    /** 下载任务开始的时候调用，如果下载错误，Error 的 userinfo 中会有 NSURLSessionDownloadTaskResumeData 关键字来标记开始的数据。 */
-    @available(OSX 10.9, *)
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didResumeAtOffset fileOffset: Int64, expectedTotalBytes: Int64){
-        
-    }
-}
-
-// MARK: - Interface
-
-extension Network {
-    
-    /// 创建并添加下载任务。线程安全。
-    public func order(identify: String? = nil, path: String, method: String = "GET", header: [String: String]? = nil, body: Data? = nil, time: TimeInterval? = nil) -> Network.Task? {
-        if type == .upload {
-            assert(false)
-            return nil
-        }
-        return queue.sync {
-            if let index = self.tasks.index(where: { $0.identify == identify }) {
-                if self.tasks[index].task.state != URLSessionTask.State.running {
-                    let task = self.tasks.remove(at: index)
-                    self.tasks.insert(task, at: 0)
-                    return task
+            if self.backQueue == nil {
+                self.connecting.receiveData?(self.connecting, data)
+            } else {
+                let connect = self.connecting!
+                self.backQueue?.async {
+                    connect.receiveData?(connect, data)
                 }
             }
-            if let request = Network.request(path: path, method: method, header: header, body: body, time: time) {
-                self.id += 1
-                var order: URLSessionTask
-                if self.type == .order {
-                    order = self.session.dataTask(with: request)
-                } else {
-                    order = self.session.downloadTask(with: request)
+        }
+    }
+    
+    /** 发送特定任务的最后一次消息，如果任务已经完成 error 将会是 nil. */
+    @available(OSX 10.9, *)
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        opreateQueue.async {
+            // FIXME: - Print
+            print("Network \(self.connecting.id) - \(self.connecting.code); size = \(self.connecting.data?.count); error = \(error);")
+            //JSON.printjson(data: self.connecting.data)
+            
+            self.connecting?.error = error
+            if self.backQueue == nil {
+                self.connecting.receiveComplete?(self.connecting, error)
+                self.connecting.clear()
+            } else {
+                let connect = self.connecting!
+                self.backQueue?.async {
+                    connect.receiveComplete?(connect, error)
+                    connect.clear()
                 }
-                order.taskDescription = identify ?? "\(self.id)"
-                
-                let task = Network.Task(identify: order.taskDescription!, path: path, method: method, header: header, body: body, time: time, task: order)
-                self.tasks.append(task)
-                
-                task.network = self
-                return task
             }
-            return nil
+            
+            self.connecting = nil
+            self.task = nil
+            self.connect()
         }
     }
 }
@@ -300,7 +239,7 @@ extension Network {
 extension Network {
     
     /// 创建 Request
-    class func request(path: String, method: String = "GET", header: [String: String]? = nil, body: Data? = nil, time: TimeInterval? = nil) -> URLRequest? {
+    class func request(path: String, method: String, header: [String: String]?, body: Data?, time: TimeInterval?) -> URLRequest? {
         
         guard let url = URL(string: path) else { return nil }
         var request = URLRequest(url: url)
@@ -315,115 +254,169 @@ extension Network {
         return request
     }
     
-}
-
-// MARK: - Data Struct
-
-// MARK: - Type
-
-extension Network {
-    enum SessionType {
-        case order
-        case background
-        case upload
+    // 创建 JSON 数据
+    class func body(_ json: Any) -> Data? {
+        if let data = json as? Data {
+            return data
+        }
+        if let data = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted) {
+            return data
+        }
+        return nil
     }
+    
 }
 
-// MARK: - Task
+// MARK: - Response
 
 extension Network {
-    /**
-     任务封装
-     */
-    public class Task {
+    
+    public class Response {
         
-        // MARK: Data
+        // MARK: Request Data
         
-        weak var network: Network?
-        
-        // MARK: Task Info
-        
-        var identify: String
-        var path: String
-        var method: String
+        var id: String = ""
+        var url: String = ""
+        var method: String = "GET"
         var header: [String: String]?
         var body: Data?
         var time: TimeInterval?
         
-        // MARK: Network
+        // MARK: Response Data
         
-        var task: URLSessionTask
-        var taskResponse: URLResponse?
+        var response: URLResponse?
+        var data: Data?
+        var error: Error?
         
-        var responseBlock: ((Network.Task) -> Void)?
-        var receiveBlock: ((Network.Task, Int) -> Void)?
-        var downloadFinishBlock: ((Network.Task, URL) -> Void)?
-        var completeBlock: ((Network.Task, Error?) -> Void)?
+        // MARK: Easy Data
         
-        // MARK: Data
-        
-        lazy var data: Data = Data()
-        var totalSize: Int = 0
-        var dataSize: Int = 0
-        
-        // MARK: State
-        
-        var running: Bool = false
-        
-        // MARK: Init
-        
-        init(identify: String, path: String, method: String, header: [String: String]?, body: Data?, time: TimeInterval?, task: URLSessionTask) {
-            self.identify = identify
-            self.path     = path
-            self.method   = method
-            self.header   = header
-            self.body     = body
-            self.time     = time
-            self.task     = task
+        subscript(keys: String...) -> String {
+            let json = JSON(data: data)
+            return json.value(keys).string ?? ""
         }
+        
+        var code: Int {
+            if let http = response as? HTTPURLResponse {
+                return http.statusCode
+            }
+            return 0
+        }
+        
+        func printHttpHeaders() {
+            if let http = response as? HTTPURLResponse {
+                print("\(id) printHttpHeaders; \(http.allHeaderFields)")
+            }
+        }
+        
+        func header<T>(_ key: String) -> T? {
+            if let http = response as? HTTPURLResponse {
+                if let value = http.allHeaderFields[key] as? T {
+                    return value
+                }
+            }
+            return nil
+        }
+        
+        // MARK: Recall
+        
+        var receiveResponse: ((Response) -> Bool)?
+        var receiveData: ((Response, Data) -> Void)?
+        var receiveComplete: ((Response, Error?) -> Void)?
+        
+        // MARK: Methods
+        
+        var request: URLRequest? {
+            return Network.request(path: url, method: method, header: header, body: body, time: time)
+        }
+        
+        func clear() {
+            receiveResponse = nil
+            receiveData = nil
+            receiveComplete = nil
+            
+            response = nil
+            data = nil
+            error = nil
+        }
+        
+        // MARK: Other Data
+        
+        var other: Any?
+        
+        func infos<T>(key: String, null: T) -> T {
+            if let dic = other as? [String: Any] {
+                if let data = dic[key] as? T {
+                    return data
+                }
+            }
+            return null
+        }
+        
     }
+    
 }
 
-// MARK: - Task Interface
-extension Network.Task {
+// MARK: - Pone
+
+extension Network.Response {
     
-    @discardableResult
-    func resume() -> Network.Task {
-        self.network?.resume()
-        return self
+    func index() -> IndexPath {
+        if let dic = other as? [String: Any] {
+            if let row = dic["row"] as? Int, let sec = dic["section"] as? Int {
+                return IndexPath(row: row, section: sec)
+            }
+        }
+        return IndexPath(row: 0, section: 0)
+    }
+    func name() -> String {
+        if let dic = other as? [String: Any] {
+            if let name = dic["name"] as? String {
+                return name
+            }
+        }
+        return ""
     }
     
-    @discardableResult
-    func cancel() -> Network.Task {
-        self.task.cancel()
-        self.running = false
-        return self
+    func thumb() -> Int {
+        if let dic = other as? [String: Any] {
+            if let thumb = dic["thumb"] as? Int {
+                return thumb
+            }
+        }
+        return 0
+    }
+    func thumbName() -> String {
+        if let dic = other as? [String: Any] {
+            if let name = dic["name"] as? String, let thumb = dic["thumb"] as? Int {
+                return "\(name)_\(thumb).png"
+            }
+        }
+        return ""
     }
     
-    @discardableResult
-    func suspend() -> Network.Task {
-        self.task.suspend()
-        self.running = false
-        return self
+    func videoimage() -> Data? {
+        if let dic = other as? [String: Any] {
+            if let image = dic["image"] as? Data {
+                return image
+            }
+        }
+        return nil
     }
     
-    func response(block: @escaping (Network.Task) -> Void) -> Network.Task {
-        self.responseBlock = block
-        return self
+    func videourl() -> String {
+        if let dic = other as? [String: Any] {
+            if let url = dic["url"] as? String {
+                return url
+            }
+        }
+        return ""
     }
-    
-    func receive(block: @escaping (Network.Task, Int) -> Void) -> Network.Task {
-        self.receiveBlock = block
-        return self
-    }
-    
-    func downloaded(block: @escaping (Network.Task, URL) -> Void) -> Network.Task {
-        self.downloadFinishBlock = block
-        return self
-    }
-    
-    func complete(block: @escaping (Network.Task, Error?) -> Void) -> Network.Task {
-        self.completeBlock = block
-        return self
+    func videoSize() -> Double {
+        if let dic = other as? [String: Any] {
+            if let size = dic["size"] as? Double {
+                return size
+            }
+        }
+        return 0
     }
 }

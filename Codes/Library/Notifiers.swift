@@ -17,6 +17,31 @@ class Notify {
     var object: Any? { return notification.object }
     var name: Notification.Name { return notification.name }
     
+    var pid: Int {
+        return (notification.userInfo?["pid"] as? Int) ?? -1
+    }
+    var id: String {
+        return (notification.userInfo?["id"] as? String) ?? ""
+    }
+    var value: String {
+        return (notification.userInfo?["value"] as? String) ?? ""
+    }
+    var result: Bool {
+        return (notification.userInfo?["result"] as? Bool) ?? false
+    }
+    var section: Int {
+        return (notification.userInfo?["section"] as? Int) ?? 0
+    }
+    var row: Int {
+        return (notification.userInfo?["row"] as? Int) ?? 0
+    }
+    var size: Int {
+        return (notification.userInfo?["size"] as? Int) ?? 0
+    }
+    var datasize: Int {
+        return (notification.userInfo?["datasize"] as? Int) ?? 0
+    }
+    
     init(info: Notification) {
         self.notification = info
     }
@@ -45,7 +70,7 @@ extension Notifiers {
         NotificationCenter.default.post(name: name, object: self, userInfo: infos)
     }
     
-    func post(name: NSNotification.Name, infos: [AnyHashable: Any]? = nil, inQueue: DispatchQueue = DispatchQueue.main) {
+    func post(name: NSNotification.Name, infos: [AnyHashable: Any]? = nil, inQueue: DispatchQueue) {
         inQueue.async {
             NotificationCenter.default.post(name: name, object: self, userInfo: infos)
         }

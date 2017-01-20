@@ -10,7 +10,7 @@ import UIKit
 
 class ImageViewerCollectionCell: UICollectionViewCell {
     
-    static let cellSelectImage = UIImage(named: "DefaultImage_W")
+    static let cellSelectImage = UIImage(named: "Select")
     
     var showSelect = false {
         didSet {
@@ -36,7 +36,7 @@ class ImageViewerCollectionCell: UICollectionViewCell {
         addSubview(selectView)
         
         Layouter(superview: self, view: imageView).edges()
-        Layouter(superview: self, view: selectView).edges()
+        Layouter(superview: self, view: selectView).trailing(-10).bottom(-10).size(w: 30, h: 30)
     }
     
 }

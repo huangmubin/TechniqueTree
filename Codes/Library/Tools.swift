@@ -43,20 +43,25 @@ public class Tools {
     
     // MARK: - 日期获取
     
-    public class func day(time: TimeInterval) -> String? {
+    public class func day(time: TimeInterval, format: String? = nil) -> String? {
         let now = Double(Int(Date().timeIntervalSince1970 / 86400) * 86400)
         switch time {
         case now - 172800 ..< now - 86400:
-            return "前天"
+            return NSLocalizedString("Day before yesterday", comment: "Day before yesterday")
         case now - 86400 ..< now:
-            return "昨天"
+            return NSLocalizedString("Yesterday", comment: "Yesterday")
         case now ..< now + 86400:
-            return "今天"
+            return NSLocalizedString("Today", comment: "Today")
         case now + 86400 ..< now + 172800:
-            return "明天"
+            return NSLocalizedString("Tomorrow", comment: "Tomorrow")
         case now + 172800 ..< now + 259200:
-            return "后天"
+            return NSLocalizedString("Day after tomorrow", comment: "Day after tomorrow")
         default:
+            if let format = format {
+                let date = DateFormatter()
+                date.dateFormat = format
+                return date.string(from: Date(timeIntervalSince1970: time))
+            }
             return nil
         }
     }
@@ -79,6 +84,12 @@ public class Tools {
         return str
     }
     
+    public class func timezoneOffset() -> Double {
+        let zone = TimeZone.current
+        let offset = zone.secondsFromGMT(for: Date())
+        return Double(offset)
+    }
+    
     // MARK: - Location
     
     public class func localized(_ key: String) -> String {
@@ -93,8 +104,37 @@ public class Tools {
         }
     }
     
+    // MARK: - Timer Run
     
+    public class func runTimer(long: Double, handler: @escaping (Double) -> Void, cancel: (() -> Void)? = nil) -> DispatchSourceTimer {
+        let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 1), queue: DispatchQueue.main)
+        timer.scheduleRepeating(wallDeadline: DispatchWallTime.now(), interval: DispatchTimeInterval.seconds(1))
+        var time = long
+        timer.setEventHandler(handler: {
+            time -= 1
+            if time == 0 {
+                timer.cancel()
+            } else {
+                handler(time)
+            }
+        })
+        if cancel != nil {
+            timer.setCancelHandler(handler: {
+                cancel?()
+            })
+        }
+        timer.resume()
+        return timer
+    }
     
+    public class func delay(time: TimeInterval, complete: @escaping () -> Void) {
+        DispatchQueue.global().async {
+            Thread.sleep(forTimeInterval: time)
+            DispatchQueue.main.async {
+                complete()
+            }
+        }
+    }
     
 }
 

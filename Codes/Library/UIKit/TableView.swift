@@ -42,6 +42,11 @@ class TableView: UITableView {
     
     // MARK: - Data
     
+    @IBOutlet weak var refreshController: UIViewController! {
+        didSet {
+            refreshDelegate = refreshController as? TableViewRefreshDelegate
+        }
+    }
     weak var refreshDelegate: TableViewRefreshDelegate?
     
     // MAKR: Remove Refresh

@@ -447,10 +447,7 @@ extension Layouter {
 
 extension Layouter {
 
-<<<<<<< HEAD
-=======
     @discardableResult
->>>>>>> c32d49e147cfd915ced9abe514a4a534eb5b42c1
     func edges(top: CGFloat = 0, bottom: CGFloat = 0, leading: CGFloat = 0, trailing: CGFloat = 0) -> Layouter {
         let _ = {
             let lay = NSLayoutConstraint(item: view, attribute: .top, relatedBy: .equal, toItem: relative, attribute: .top, multiplier: 1, constant: top)

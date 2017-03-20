@@ -39,6 +39,7 @@ class ImageViewer: UIView {
     var collection = ImageViewerCollection()
     var viewer = ImageViewerBig()
     var animationImage = UIImageView()
+    var headerLabelColor = UIColor.white
     
     // MARK: - Data
     
@@ -57,6 +58,10 @@ class ImageViewer: UIView {
         collection.reload()
         viewer.index = 0
         viewer.updateImages()
+    }
+    
+    func reload(items: [IndexPath]) {
+        collection.collection.reloadItems(at: items)
     }
     
     func delete(items: [IndexPath]) {
@@ -124,6 +129,7 @@ extension ImageViewer: ImageViewerCollectionDelegate {
     }
     
     func imageViewerCollection(header: ImageViewerCollectionHeader, at index: Int) {
+        header.label.textColor = headerLabelColor
         header.label.text = delegate?.imageViewer(self, headerText: index)
     }
     

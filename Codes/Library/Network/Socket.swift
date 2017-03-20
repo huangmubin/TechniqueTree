@@ -12,6 +12,8 @@ import Foundation
 
 @_silgen_name("socket_c_close") func c_close(sock: Int32) -> Int32
 @_silgen_name("socket_c_shutdown") func c_shutdown(sock: Int32, type: Int32) -> Int32
+//char *addressIp()
+@_silgen_name("addressIp") func c_addressIp() -> UnsafePointer<UInt8>
 
 // MARK: TCP
 
@@ -42,6 +44,10 @@ public class Socket {
     init() {
         self.address = ""
         self.port    = 0
+    }
+    
+    class func addressIp() -> String {
+        return String(cString: c_addressIp())
     }
     
 }

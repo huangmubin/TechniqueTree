@@ -58,7 +58,7 @@ public class Explorer {
     public class func copy(file: String, to: String) -> Bool {
         do {
             if FileManager.default.fileExists(atPath: file) {
-                try FileManager.default.createDirectory(at: URL(fileURLWithPath: file), withIntermediateDirectories: true, attributes: nil)
+                //try FileManager.default.createDirectory(at: URL(fileURLWithPath: file), withIntermediateDirectories: true, attributes: nil)
                 try FileManager.default.copyItem(atPath: file, toPath: to)
                 return true
             }

@@ -34,7 +34,7 @@ class Layouter {
     func setViews(view: UIView? = nil, relative: UIView? = nil) -> Layouter {
         if let view = view {
             self.view = view
-            self.view.translatesAutoresizingMaskIntoConstraints = false
+            self.view.translatesAutoresizingMaskIntoConstraints = true
         }
         if let view = relative {
             self.relative = view

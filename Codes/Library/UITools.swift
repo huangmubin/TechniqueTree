@@ -158,4 +158,16 @@ public class UITools {
         return box.size
     }
     
+    // MARK: - 渐变色
+    
+    public class func gradientLayer(frame: CGRect = CGRect.zero, point: (x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat) = (0,0.5,1,0.5), locations: [NSNumber]? = nil, colors: [CGColor]) -> CAGradientLayer {
+        let layer = CAGradientLayer()
+        layer.frame = frame
+        layer.startPoint = CGPoint(x: point.x1, y: point.y1)
+        layer.endPoint = CGPoint(x: point.x2, y: point.y2)
+        layer.locations = locations
+        layer.colors = colors
+        return layer
+    }
+    
 }
